@@ -1,0 +1,62 @@
+[
+  {
+    "file": "01_shell_print.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "bodies": 1,
+    "volume_mm3": 112569.85770212657,
+    "triangles": 23062,
+    "bounds": [
+      [
+        -47.63139724731445,
+        -53.45299530029297,
+        0.0
+      ],
+      [
+        47.63139724731445,
+        50.66987228393555,
+        37.70000076293945
+      ]
+    ]
+  },
+  {
+    "file": "02_hatch_print.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "bodies": 1,
+    "volume_mm3": 6922.971415421237,
+    "triangles": 2618,
+    "bounds": [
+      [
+        -32.0,
+        -37.0,
+        0.0
+      ],
+      [
+        32.0,
+        14.0,
+        3.299999952316284
+      ]
+    ]
+  },
+  {
+    "file": "04_magnet_fit_coupon.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "bodies": 1,
+    "volume_mm3": 571.1168767321941,
+    "triangles": 516,
+    "bounds": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        14.0,
+        14.0,
+        3.5
+      ]
+    ]
+  }
+]

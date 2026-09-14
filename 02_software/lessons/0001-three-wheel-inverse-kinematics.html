@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>三轮全向运动学仿真</title>
+  <style>
+    :root {
+      --bg: #f7f8f5;
+      --paper: #ffffff;
+      --ink: #1f2428;
+      --muted: #667078;
+      --line: #d9dfdd;
+      --green: #168a5b;
+      --red: #c4493d;
+      --blue: #2f6feb;
+      --yellow: #c58b16;
+      --soft-green: #e9f7ef;
+      --soft-red: #fff0ed;
+      --shadow: 0 18px 45px rgba(31, 36, 40, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.86), rgba(247,248,245,0.96)),
+        radial-gradient(circle at 20% 10%, rgba(47,111,235,0.08), transparent 32%),
+        var(--bg);
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 42px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 760px;
+    }
+
+    .spec {
+      flex: 0 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      line-height: 1.65;
+      min-width: 230px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .canvas-wrap {
+      padding: 14px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .side {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .block {
+      padding: 16px;
+      min-width: 0;
+    }
+
+    h2 {
+      font-size: 17px;
+      margin: 0 0 12px;
+    }
+
+    .control {
+      display: grid;
+      grid-template-columns: 118px 1fr 70px;
+      gap: 10px;
+      align-items: center;
+      margin: 10px 0;
+      font-size: 13px;
+      min-width: 0;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      min-width: 0;
+      accent-color: var(--green);
+    }
+
+    .value {
+      color: var(--muted);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: 1px solid #b9c3c0;
+      background: #ffffff;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 9px 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: var(--green);
+      background: var(--soft-green);
+    }
+
+    .bars {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 34px 1fr 88px;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .track {
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f0c7c1 0 50%, #dce6ef 50% 100%);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #d0d7de;
+    }
+
+    .fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      background: var(--green);
+    }
+
+    .fill.neg {
+      left: auto;
+      right: 50%;
+      background: var(--red);
+    }
+
+    .formula {
+      background: #f5f7f7;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      overflow: auto;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre;
+    }
+
+    .explain {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--soft-green);
+      border: 1px solid #c8ead7;
+      color: #1f5f42;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .status.warn {
+      background: var(--soft-red);
+      border-color: #f3c1ba;
+      color: #8a3028;
+    }
+
+    @media (max-width: 920px) {
+      header { display: block; }
+      .spec { margin-top: 14px; }
+      .layout { grid-template-columns: 1fr; }
+      .explain { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      main { width: min(100vw - 24px, 1180px); }
+      h1 { font-size: 27px; }
+      .control { grid-template-columns: 1fr 78px; }
+      .control label { grid-column: 1 / -1; }
+      .buttons { grid-template-columns: repeat(2, 1fr); }
+      .bar-row { grid-template-columns: 30px 1fr 78px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>三轮全向运动学仿真</h1>
+      <p class="subtitle">拖动参数，看手机给出的平移和旋转命令如何变成三个轮子的转速。定版底盘使用 47 mm 轮，轮心圆直径 135 mm。</p>
+    </div>
+    <div class="spec">
+      轮心圆半径 R: 67.5 mm<br>
+      轮心圆直径: 135 mm<br>
+      装轮后占地直径: 约 182 mm<br>
+      手机托盘建议: 175 x 90 mm
+    </div>
+  </header>
+
+  <section class="layout">
+    <div class="panel canvas-wrap">
+      <canvas id="sim" width="900" height="900"></canvas>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="side">
+      <div class="panel block">
+        <h2>输入命令</h2>
+        <div class="control">
+          <label for="heading">车身朝向</label>
+          <input id="heading" type="range" min="-180" max="180" step="1" value="0">
+          <span class="value" id="headingVal"></span>
+        </div>
+        <div class="control">
+          <label for="vx">Vx 世界向右</label>
+          <input id="vx" type="range" min="-0.5" max="0.5" step="0.01" value="0">
+          <span class="value" id="vxVal"></span>
+        </div>
+        <div class="control">
+          <label for="vy">Vy 世界向前</label>
+          <input id="vy" type="range" min="-0.5" max="0.5" step="0.01" value="0.28">
+          <span class="value" id="vyVal"></span>
+        </div>
+        <div class="control">
+          <label for="omega">原地旋转</label>
+          <input id="omega" type="range" min="-4" max="4" step="0.1" value="0">
+          <span class="value" id="omegaVal"></span>
+        </div>
+        <div class="control">
+          <label for="radius">轮心半径</label>
+          <input id="radius" type="range" min="60" max="95" step="0.5" value="67.5">
+          <span class="value" id="radiusVal"></span>
+        </div>
+        <div class="control">
+          <label for="maxRpm">电机最高转速</label>
+          <input id="maxRpm" type="range" min="100" max="400" step="10" value="200">
+          <span class="value" id="maxRpmVal"></span>
+        </div>
+        <div class="buttons">
+          <button data-preset="forward">前进</button>
+          <button data-preset="right">右移</button>
+          <button data-preset="rotate">旋转</button>
+          <button data-preset="diag">斜走</button>
+          <button data-preset="mixed">边走边转</button>
+          <button data-preset="stop">停止</button>
+        </div>
+      </div>
+
+      <div class="panel block">
+        <h2>三个轮子的输出</h2>
+        <div class="bars">
+          <div class="bar-row"><strong>W1</strong><div class="track"><div class="fill" id="bar0"></div></div><span id="rpm0" class="value"></span></div>
+          <div class="bar-row"><strong>W2</strong><div class="track"><div class="fill" id="bar1"></div></div><span id="rpm1" class="value"></span></div>
+          <div class="bar-row"><strong>W3</strong><div class="track"><div class="fill" id="bar2"></div></div><span id="rpm2" class="value"></span></div>
+        </div>
+      </div>
+
+      <div class="panel block">
+        <h2>本车公式</h2>
+        <div class="formula" id="formula"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="explain">
+    <div class="panel card">
+      <h2>1. 先看车体怎么动</h2>
+      <p>你想让车向右、向前或原地转，这三个量就是 Vx、Vy、omega。如果车身已经转了一个角度，要先把世界方向换算成车身自己的方向。</p>
+    </div>
+    <div class="panel card">
+      <h2>2. 每个轮子只看一条线</h2>
+      <p>全向轮的主动方向是轮子切线方向。轮子不会关心完整的二维速度，只关心“沿着我能滚的方向有多少速度”。这一步叫投影。</p>
+    </div>
+    <div class="panel card">
+      <h2>3. 旋转项对三个轮子同号</h2>
+      <p>三个轮子都在半径 R 的圆上。原地旋转时，每个轮心的切向速度都是 R 乘 omega，所以三个公式最后都加同一个旋转项。</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  const canvas = document.getElementById("sim");
+  const ctx = canvas.getContext("2d");
+  const ids = ["heading", "vx", "vy", "omega", "radius", "maxRpm"];
+  const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+  const wheelAngles = [
+    { name: "W1 左前", theta: 150 * Math.PI / 180 },
+    { name: "W2 右前", theta: 30 * Math.PI / 180 },
+    { name: "W3 后轮", theta: 270 * Math.PI / 180 }
+  ];
+
+  let phase = 0;
+
+  function val(id) {
+    return Number(els[id].value);
+  }
+
+  function setPreset(name) {
+    const presets = {
+      forward: { vx: 0, vy: 0.28, omega: 0 },
+      right: { vx: 0.28, vy: 0, omega: 0 },
+      rotate: { vx: 0, vy: 0, omega: 2.2 },
+      diag: { vx: 0.22, vy: 0.22, omega: 0 },
+      mixed: { vx: 0.22, vy: 0.18, omega: 1.2 },
+      stop: { vx: 0, vy: 0, omega: 0 }
+    };
+    const p = presets[name];
+    els.vx.value = p.vx;
+    els.vy.value = p.vy;
+    els.omega.value = p.omega;
+    draw();
+  }
+
+  document.querySelectorAll("button[data-preset]").forEach(btn => {
+    btn.addEventListener("click", () => setPreset(btn.dataset.preset));
+  });
+  ids.forEach(id => els[id].addEventListener("input", draw));
+
+  function rotate(p, a) {
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    return { x: p.x * c - p.y * s, y: p.x * s + p.y * c };
+  }
+
+  function wheelModel() {
+    const heading = val("heading") * Math.PI / 180;
+    const vxWorld = val("vx");
+    const vyWorld = val("vy");
+    const omega = val("omega");
+    const Rmm = val("radius");
+    const Rm = Rmm / 1000;
+    const wheelDiameterM = 0.047;
+    const maxRpm = val("maxRpm");
+    const circumference = Math.PI * wheelDiameterM;
+    const maxWheelSpeed = maxRpm / 60 * circumference;
+
+    const vxBody = Math.cos(heading) * vxWorld + Math.sin(heading) * vyWorld;
+    const vyBody = -Math.sin(heading) * vxWorld + Math.cos(heading) * vyWorld;
+
+    const wheels = wheelAngles.map(w => {
+      const rBody = { x: Rmm * Math.cos(w.theta), y: Rmm * Math.sin(w.theta) };
+      const tBody = { x: -Math.sin(w.theta), y: Math.cos(w.theta) };
+      const rWorld = rotate(rBody, heading);
+      const tWorld = rotate(tBody, heading);
+      const speed = tBody.x * vxBody + tBody.y * vyBody + Rm * omega;
+      const rpm = speed / circumference * 60;
+      const ratio = rpm / maxRpm;
+      return { ...w, rBody, tBody, rWorld, tWorld, speed, rpm, ratio };
+    });
+
+    const maxRatio = Math.max(...wheels.map(w => Math.abs(w.ratio)), 1);
+    wheels.forEach(w => w.command = w.ratio / maxRatio);
+
+    return { heading, vxWorld, vyWorld, vxBody, vyBody, omega, Rmm, Rm, maxRpm, maxWheelSpeed, wheels, maxRatio };
+  }
+
+  function worldToCanvas(p, scale) {
+    return { x: p.x * scale, y: -p.y * scale };
+  }
+
+  function line(p1, p2, style, width = 1) {
+    ctx.strokeStyle = style;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  }
+
+  function arrow(start, vec, color, scale = 1, width = 3) {
+    const end = { x: start.x + vec.x * scale, y: start.y + vec.y * scale };
+    line(start, end, color, width);
+    const ang = Math.atan2(end.y - start.y, end.x - start.x);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(end.x, end.y);
+    ctx.lineTo(end.x - 12 * Math.cos(ang - 0.45), end.y - 12 * Math.sin(ang - 0.45));
+    ctx.lineTo(end.x - 12 * Math.cos(ang + 0.45), end.y - 12 * Math.sin(ang + 0.45));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawWheel(center, tangent, label, command) {
+    const angle = Math.atan2(tangent.y, tangent.x);
+    ctx.save();
+    ctx.translate(center.x, center.y);
+    ctx.rotate(angle);
+    ctx.fillStyle = "#24292f";
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(-32, -12, 64, 24, 7);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#4d5660";
+    for (let i = -2; i <= 2; i++) {
+      ctx.beginPath();
+      ctx.ellipse(i * 12 + (phase * command * 8) % 12, 0, 4, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.fillStyle = "#1f2428";
+    ctx.font = "13px Arial";
+    ctx.fillText(label, center.x + 10, center.y - 12);
+  }
+
+  function draw() {
+    const m = wheelModel();
+    phase += 0.04;
+
+    document.getElementById("headingVal").textContent = `${val("heading").toFixed(0)} deg`;
+    document.getElementById("vxVal").textContent = `${m.vxWorld.toFixed(2)} m/s`;
+    document.getElementById("vyVal").textContent = `${m.vyWorld.toFixed(2)} m/s`;
+    document.getElementById("omegaVal").textContent = `${m.omega.toFixed(1)} rad/s`;
+    document.getElementById("radiusVal").textContent = `${m.Rmm.toFixed(0)} mm`;
+    document.getElementById("maxRpmVal").textContent = `${m.maxRpm.toFixed(0)} RPM`;
+
+    const ratioWarning = m.maxRatio > 1.001;
+    const status = document.getElementById("status");
+    status.className = ratioWarning ? "status warn" : "status";
+    status.textContent = ratioWarning
+      ? `有轮子超过电机最高转速，程序需要把三个输出一起除以 ${m.maxRatio.toFixed(2)}，这就叫归一化限幅。`
+      : "输出未超过电机最高转速。试试“前进”：两个前轮一正一反，后轮接近 0。";
+
+    m.wheels.forEach((w, i) => {
+      const bar = document.getElementById(`bar${i}`);
+      const pct = Math.min(Math.abs(w.command), 1) * 50;
+      bar.className = w.command < 0 ? "fill neg" : "fill";
+      bar.style.width = `${pct}%`;
+      document.getElementById(`rpm${i}`).textContent = `${w.rpm.toFixed(0)} RPM`;
+    });
+
+    document.getElementById("formula").textContent =
+`车体坐标速度:
+vx = ${m.vxBody.toFixed(3)} m/s
+vy = ${m.vyBody.toFixed(3)} m/s
+
+轮心半径:
+R = ${m.Rm.toFixed(3)} m
+
+三轮逆解:
+w1 = -0.5*vx -0.866*vy + R*omega = ${m.wheels[0].speed.toFixed(3)} m/s
+w2 = -0.5*vx +0.866*vy + R*omega = ${m.wheels[1].speed.toFixed(3)} m/s
+w3 =  1.0*vx             + R*omega = ${m.wheels[2].speed.toFixed(3)} m/s`;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    const scale = 3.1;
+
+    ctx.strokeStyle = "#d0d7de";
+    ctx.lineWidth = 1;
+    for (let x = -360; x <= 360; x += 30) line({ x: x, y: -360 }, { x: x, y: 360 }, "#eef1f2", 1);
+    for (let y = -360; y <= 360; y += 30) line({ x: -360, y: y }, { x: 360, y: y }, "#eef1f2", 1);
+    line({ x: -380, y: 0 }, { x: 380, y: 0 }, "#aeb7bd", 1.4);
+    line({ x: 0, y: -380 }, { x: 0, y: 380 }, "#aeb7bd", 1.4);
+
+    const centerCircle = m.Rmm * scale;
+    ctx.strokeStyle = "#2f6feb";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.arc(0, 0, centerCircle, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = "#747d86";
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.arc(0, 0, (m.Rmm + 23.5) * scale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const pts = m.wheels.map(w => worldToCanvas(w.rWorld, scale));
+    ctx.fillStyle = "rgba(196, 73, 61, 0.12)";
+    ctx.strokeStyle = "rgba(196, 73, 61, 0.72)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    ctx.lineTo(pts[1].x, pts[1].y);
+    ctx.lineTo(pts[2].x, pts[2].y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.save();
+    ctx.rotate(-m.heading);
+    ctx.strokeStyle = "#168a5b";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(-45 * scale, -87.5 * scale, 90 * scale, 175 * scale);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(22, 138, 91, 0.10)";
+    ctx.fillRect(-35 * scale, -80 * scale, 70 * scale, 160 * scale);
+    ctx.strokeStyle = "rgba(22, 138, 91, 0.72)";
+    ctx.strokeRect(-35 * scale, -80 * scale, 70 * scale, 160 * scale);
+    ctx.restore();
+
+    m.wheels.forEach((w, i) => {
+      const c = worldToCanvas(w.rWorld, scale);
+      const t = { x: w.tWorld.x, y: -w.tWorld.y };
+      line({ x: 0, y: 0 }, c, "#59636b", 8);
+      drawWheel(c, t, `W${i + 1}`, w.command);
+      arrow(c, { x: t.x * w.command, y: t.y * w.command }, w.command >= 0 ? "#168a5b" : "#c4493d", 55, 3);
+    });
+
+    arrow({ x: 0, y: 0 }, { x: m.vxWorld, y: -m.vyWorld }, "#2f6feb", 180, 4);
+    ctx.fillStyle = "#2f6feb";
+    ctx.font = "15px Arial";
+    ctx.fillText("期望平移速度", 14, -18);
+
+    ctx.fillStyle = "#1f2428";
+    ctx.beginPath();
+    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#1f2428";
+    ctx.font = "14px Arial";
+    ctx.fillText(`轮心圆 D=${(m.Rmm * 2).toFixed(0)} mm`, -118, -300);
+    ctx.fillText(`Outer D~${(m.Rmm * 2 + 47).toFixed(0)} mm`, -118, -278);
+    ctx.restore();
+  }
+
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      this.moveTo(x + rr, y);
+      this.arcTo(x + w, y, x + w, y + h, rr);
+      this.arcTo(x + w, y + h, x, y + h, rr);
+      this.arcTo(x, y + h, x, y, rr);
+      this.arcTo(x, y, x + w, y, rr);
+      return this;
+    };
+  }
+
+  function animate() {
+    draw();
+    requestAnimationFrame(animate);
+  }
+  animate();
+</script>
+</body>
+</html>

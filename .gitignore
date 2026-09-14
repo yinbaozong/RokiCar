@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.gradle/
+.idea/
+.kotlin/
+node_modules/
+local.properties
+.env
+.env.*
+*.jks
+*.keystore
+*.log

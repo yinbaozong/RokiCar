@@ -1,0 +1,67 @@
+{
+  "objects": [
+    {
+      "path": "build\\meshes\\01_shell.stl",
+      "name": "01_shell",
+      "color": [
+        0.1,
+        0.68,
+        0.29
+      ]
+    },
+    {
+      "path": "build\\meshes\\02_hatch.stl",
+      "name": "02_hatch",
+      "color": [
+        0.1,
+        0.68,
+        0.29
+      ]
+    },
+    {
+      "path": "reference/render_context/original_0.stl",
+      "name": "Original component 0",
+      "color": [
+        0.24,
+        0.28,
+        0.27
+      ]
+    },
+    {
+      "path": "reference/render_context/original_1.stl",
+      "name": "Original component 1",
+      "color": [
+        0.13,
+        0.15,
+        0.16
+      ]
+    },
+    {
+      "path": "reference/render_context/original_2.stl",
+      "name": "Original component 2",
+      "color": [
+        0.13,
+        0.15,
+        0.16
+      ]
+    },
+    {
+      "path": "reference/render_context/original_3.stl",
+      "name": "Original component 3",
+      "color": [
+        0.13,
+        0.15,
+        0.16
+      ]
+    },
+    {
+      "path": "reference/render_context/original_14.stl",
+      "name": "Original component 14",
+      "color": [
+        0.85,
+        0.91,
+        0.88
+      ]
+    }
+  ]
+}

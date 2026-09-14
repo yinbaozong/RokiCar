@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="760" viewBox="0 0 1180 760">
+  <defs>
+    <style>
+      text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: #17202a; }
+      .title { font-size: 28px; font-weight: 700; }
+      .label { font-size: 19px; font-weight: 700; }
+      .small { font-size: 15px; }
+      .pin { font-size: 14px; }
+      .box { fill: #fff; stroke: #243447; stroke-width: 2; rx: 12; }
+      .receiver { fill: #eef7ff; }
+      .drv { fill: #fff5f5; }
+      .motor { fill: #f7fff0; }
+      .power { fill: #fffbe8; }
+      .sig { stroke: #2266cc; stroke-width: 3; fill: none; }
+      .pwr { stroke: #d14b27; stroke-width: 4; fill: none; }
+      .gnd { stroke: #333; stroke-width: 4; fill: none; }
+      .mot { stroke: #168a5b; stroke-width: 4; fill: none; }
+      .stby { stroke: #7b3fc6; stroke-width: 3; fill: none; }
+      .note { fill: #fff7d6; stroke: #d8a600; stroke-width: 1.5; rx: 8; }
+    </style>
+  </defs>
+
+  <rect width="1180" height="760" fill="#fafafa"/>
+  <text class="title" x="38" y="48">推荐接法：接收板 M1/M2 + 一块 DRV8833 控制第三轮</text>
+
+  <rect class="box receiver" x="50" y="95" width="330" height="430"/>
+  <text class="label" x="82" y="132">CyberBrick 接收扩展板</text>
+  <text class="small" x="82" y="162">核心板插在接收板上，不焊核心板</text>
+
+  <text class="pin" x="88" y="210">M1 有刷电机口 -> W1 左前轮</text>
+  <text class="pin" x="88" y="250">M2 有刷电机口 -> W2 右前轮</text>
+  <text class="pin" x="88" y="310">D1 LED 口信号脚 = GPIO21</text>
+  <text class="pin" x="88" y="345">D2 LED 口信号脚 = GPIO20</text>
+  <text class="pin" x="88" y="405">任意 GND -> DRV8833 GND</text>
+  <text class="pin" x="88" y="445">D1/D2/舵机口 V -> DRV8833 STBY</text>
+
+  <rect class="box drv" x="520" y="225" width="280" height="240"/>
+  <text class="label" x="552" y="262">外接 DRV8833</text>
+  <text class="small" x="552" y="292">只用 A 路，控制 W3 后轮</text>
+  <text class="pin" x="552" y="335">AIN1 <- D1 信号 / GPIO21</text>
+  <text class="pin" x="552" y="365">AIN2 <- D2 信号 / GPIO20</text>
+  <text class="pin" x="552" y="405">AO1 / AO2 -> W3 后轮</text>
+  <text class="pin" x="552" y="435">BIN1/BIN2/BO1/BO2 空着</text>
+
+  <rect class="box motor" x="900" y="120" width="220" height="88"/>
+  <text class="label" x="944" y="158">W1 左前轮</text>
+  <text class="small" x="948" y="185">接 M1</text>
+
+  <rect class="box motor" x="900" y="260" width="220" height="88"/>
+  <text class="label" x="944" y="298">W2 右前轮</text>
+  <text class="small" x="948" y="325">接 M2</text>
+
+  <rect class="box motor" x="900" y="410" width="220" height="88"/>
+  <text class="label" x="958" y="448">W3 后轮</text>
+  <text class="small" x="922" y="475">接 DRV8833 AO1/AO2</text>
+
+  <rect class="box power" x="50" y="585" width="330" height="105"/>
+  <text class="label" x="88" y="622">6V 电机电源</text>
+  <text class="small" x="88" y="652">正极 -> 接收板电池口 + DRV8833 VM</text>
+  <text class="small" x="88" y="677">负极 -> 接收板 GND + DRV8833 GND</text>
+
+  <path class="mot" d="M380 208 C580 120 720 142 900 160"/>
+  <path class="mot" d="M380 248 C590 230 720 285 900 304"/>
+  <path class="mot" d="M800 405 C850 418 865 442 900 454"/>
+
+  <path class="sig" d="M380 310 C445 310 470 335 520 335"/>
+  <path class="sig" d="M380 345 C445 345 470 365 520 365"/>
+  <path class="stby" d="M380 445 C450 445 470 455 520 455"/>
+  <path class="gnd" d="M380 405 C450 405 470 455 520 455"/>
+
+  <path class="pwr" d="M380 652 C450 625 470 300 520 300"/>
+  <path class="gnd" d="M380 677 C450 660 470 455 520 455"/>
+
+  <rect class="note" x="455" y="590" width="650" height="90"/>
+  <text class="small" x="482" y="620">D1/D2 口一般有 D/V/G 三个针：只把 D 接 AIN，把 G 接 GND。</text>
+  <text class="small" x="482" y="645">STBY 可以接 V，因为 STBY 是 0-5V 逻辑输入；不要把 V 当 VM 电机电源。</text>
+  <text class="small" x="482" y="670">DRV8833 的 VM 必须接 6V 电机电源，不能接 LED/舵机口的 V 来带电机。</text>
+</svg>

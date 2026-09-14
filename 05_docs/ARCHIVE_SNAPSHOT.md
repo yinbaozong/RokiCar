@@ -1,0 +1,1 @@
+FILE_INDEX.tsv及SHA256SUMS.json保留打包快照；GitHub新增的LICENSE与README改动不在旧快照校验范围内。仓库内容以Git提交为准。完整原始资料包可在GitHub Release下载。

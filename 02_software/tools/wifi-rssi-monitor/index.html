@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OmniCar Wi-Fi 信号监测</title>
+  <style>
+    :root{--ink:#18201b;--muted:#68716b;--line:#d7ddd8;--surface:#fff;--soft:#f1f4f1;--green:#138653;--red:#a33b32;--amber:#a36812}
+    *{box-sizing:border-box}body{margin:0;background:#eef1ee;color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif;letter-spacing:0}
+    main{width:min(960px,calc(100% - 28px));margin:24px auto 48px;display:grid;gap:14px}header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-size:24px;margin:0}.badge{padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--muted);font-size:13px}.badge.ok{color:#087342;border-color:#77b894}
+    .summary{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:1px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--line)}
+    .metric{min-height:112px;padding:16px;background:var(--surface);display:flex;flex-direction:column;justify-content:center}.metric small{color:var(--muted)}.metric strong{font-size:28px;margin-top:8px}.metric.primary strong{font:700 54px/1 Consolas,monospace;color:var(--green)}
+    .panel{padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.panel h2{font-size:16px;margin:0}.hint{font-size:13px;color:var(--muted)}
+    canvas{display:block;width:100%;height:310px;background:#fafcfa;border:1px solid var(--line);border-radius:6px}
+    .controls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.controls button{min-height:44px;border:1px solid #aeb8b0;border-radius:6px;background:#fff;font-weight:700;cursor:pointer}.controls button.active{color:#075f39;border-color:#58a87c;background:#e7f5ed}.controls button.danger{color:#8b3028}
+    .log{min-height:42px;margin-top:12px;padding:10px;background:var(--soft);border-radius:6px;color:var(--muted);font:13px/1.5 Consolas,monospace}.warning{color:var(--amber)}
+    @media(max-width:650px){main{margin-top:14px}.summary{grid-template-columns:1fr 1fr}.metric.primary{grid-column:1/-1}.controls{grid-template-columns:1fr 1fr}.controls button:last-child{grid-column:1/-1}canvas{height:260px}}
+  </style>
+</head>
+<body><main>
+  <header><h1>OmniCar Wi-Fi 信号监测</h1><span id="state" class="badge">等待手机</span></header>
+  <section class="summary">
+    <div class="metric primary"><small>当前 RSSI</small><strong id="rssi">--</strong></div>
+    <div class="metric"><small>最近 5 秒平均</small><strong id="average">--</strong></div>
+    <div class="metric"><small>最近 30 秒范围</small><strong id="range">--</strong></div>
+    <div class="metric"><small>Wi-Fi / 链路</small><strong id="network">--</strong></div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>最近 30 秒</h2><span class="hint">越接近 0，信号越强</span></div>
+    <canvas id="chart"></canvas>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>测试标记</h2><span class="hint">移动到位置后停留至少 5 秒</span></div>
+    <div class="controls">
+      <button data-mark="近距离">近距离</button><button data-mark="中距离">中距离</button><button data-mark="远距离">远距离</button><button data-mark="重新靠近">重新靠近</button><button id="clear" class="danger">清空记录</button>
+    </div>
+    <div id="log" class="log">先保持手机靠近小车，点击“近距离”。</div>
+  </section>
+</main><script>
+const history=[],marks=[];let currentLabel='未标记';
+const $=id=>document.getElementById(id),canvas=$('chart'),ctx=canvas.getContext('2d');
+function resize(){const dpr=devicePixelRatio||1,rect=canvas.getBoundingClientRect();canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw()}
+function draw(){const w=canvas.clientWidth,h=canvas.clientHeight,p={l:48,r:15,t:18,b:30};ctx.clearRect(0,0,w,h);ctx.font='12px Arial';ctx.fillStyle='#68716b';ctx.strokeStyle='#dde2de';ctx.lineWidth=1;[-20,-40,-60,-80,-100].forEach(v=>{const y=p.t+(-20-v)/80*(h-p.t-p.b);ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(w-p.r,y);ctx.stroke();ctx.fillText(`${v}`,8,y+4)});const now=Date.now(),span=30000,x=t=>p.l+(t-(now-span))/span*(w-p.l-p.r),y=v=>p.t+(-20-v)/80*(h-p.t-p.b);ctx.strokeStyle='#138653';ctx.lineWidth=2;ctx.beginPath();history.forEach((s,i)=>{const px=x(s.t),py=y(s.rssi);if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py)});ctx.stroke();marks.filter(m=>m.t>=now-span).forEach(m=>{const px=x(m.t);ctx.strokeStyle='#a36812';ctx.beginPath();ctx.moveTo(px,p.t);ctx.lineTo(px,h-p.b);ctx.stroke();ctx.fillStyle='#a36812';ctx.fillText(m.label,Math.min(px+4,w-70),p.t+13)});ctx.fillStyle='#68716b';ctx.fillText('30 秒前',p.l,h-8);ctx.fillText('现在',w-p.r-25,h-8)}
+function update(data){const state=$('state');if(!data.connected){state.textContent=data.error||'未连接';state.className='badge';$('rssi').textContent='--';$('network').textContent='--';$('log').innerHTML=`<span class="warning">${data.error||'等待数据'}。请保持 USB 调试连接。</span>`;draw();return}state.textContent='实时采集中';state.className='badge ok';const sample={t:data.timestamp||Date.now(),rssi:data.rssi,label:currentLabel};history.push(sample);while(history.length&&history[0].t<Date.now()-30000)history.shift();const five=history.filter(s=>s.t>Date.now()-5000).map(s=>s.rssi),all=history.map(s=>s.rssi),avg=five.reduce((a,b)=>a+b,0)/five.length;$('rssi').textContent=`${data.rssi} dBm`;$('average').textContent=`${avg.toFixed(1)} dBm`;$('range').textContent=`${Math.min(...all)} ~ ${Math.max(...all)}`;$('network').textContent=`${data.ssid} / ${data.linkSpeed??'--'}M`;$('log').textContent=`${currentLabel}：当前 ${data.rssi} dBm，5 秒平均 ${avg.toFixed(1)} dBm；请在每个位置停留至少 5 秒。`;draw()}
+document.querySelectorAll('[data-mark]').forEach(button=>button.addEventListener('click',()=>{currentLabel=button.dataset.mark;marks.push({t:Date.now(),label:currentLabel});document.querySelectorAll('[data-mark]').forEach(b=>b.classList.toggle('active',b===button));draw()}));
+$('clear').addEventListener('click',()=>{history.length=0;marks.length=0;currentLabel='未标记';document.querySelectorAll('[data-mark]').forEach(b=>b.classList.remove('active'));draw()});
+new EventSource('/events').onmessage=event=>update(JSON.parse(event.data));window.addEventListener('resize',resize);resize();
+</script></body></html>

@@ -1,0 +1,25 @@
+{
+  "nail_approach_interference_mm3": 0.0,
+  "version": "V7 small independent lifting lip",
+  "magnet_diameter_mm": 8,
+  "magnet_thickness_mm": 2,
+  "quantity": 4,
+  "socket_diameter_mm": 8.25,
+  "socket_depth_mm": 2.15,
+  "hatch_above_original_roof_mm": 3.5,
+  "V2_height_above_roof_mm": 12.5,
+  "roof_recess_safety_margin_mm": 1.0,
+  "cap_body_overlap_mm3": 0.0,
+  "battery_extraction_obstruction_mm3": 0.0,
+  "finger_scoop": {
+    "nominal_width_mm": 8,
+    "original_roof_cut_depth_mm": 0.7,
+    "clear_height_mm": 2.0,
+    "lid_roof_remaining_mm": 2.2,
+    "right_locator_xy": [
+      29.6,
+      23.0
+    ]
+  },
+  "note": "Two verified blind exterior roof recesses, small locating pins, a tapered exterior guide surround and one small fully open fixed-rim access and an independent hatch lip alter the original shell. Internal geometry and wheel-edge surfaces are unchanged. Basic CAD checks only; no physical magnetic/print tests."
+}

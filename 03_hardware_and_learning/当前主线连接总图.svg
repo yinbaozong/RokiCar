@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000"><rect width="1500" height="1000" fill="#f6f8f7"/><style>text{font-family:Microsoft YaHei,Arial,sans-serif;fill:#183229;font-size:20px}.small{font-size:17px}.title{font-size:32px;font-weight:bold}</style>
+<text x="45" y="55" class="title">RIFT / OmniCar · 当前主线模块连接图</text>
+<text x="45" y="90" class="small">Android 1.21 + CyberBrick M1/M2 + 外接DRV8833；模块级连接示意，非PCB原理图</text>
+<rect x="45" y="135" width="365" height="440" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
+<text x="63" y="168" class="">CyberBrick 核心＋接收板</text>
+<text x="63" y="201" class="small">Wi-Fi：OmniCar</text>
+<text x="63" y="230" class="small">WebSocket：192.168.4.1/ws</text>
+<text x="63" y="259" class="small"></text>
+<text x="63" y="288" class="small">M1 → W1左前轮</text>
+<text x="63" y="317" class="small">M2 → W2右前轮</text>
+<text x="63" y="346" class="small">D1信号 = GPIO21</text>
+<text x="63" y="375" class="small">D2信号 = GPIO20</text>
+<text x="63" y="404" class="small">S1信号 = GPIO3</text>
+<text x="63" y="433" class="small">GND = 所有模块共同参考地</text>
+<rect x="860" y="135" width="590" height="105" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
+<text x="878" y="168" class="">M1 / M2 电机输出</text>
+<text x="878" y="201" class="small">M1接左前轮两线；M2接右前轮两线</text>
+<rect x="860" y="285" width="590" height="160" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
+<text x="878" y="318" class="">DRV8833 → 第三轮</text>
+<text x="878" y="351" class="small">AIN1 ← GPIO21；AIN2 ← GPIO20</text>
+<text x="878" y="380" class="small">AO1 / AO2 → W3后轮；B路不用</text>
+<text x="878" y="409" class="small">VM ← 电机电源；GND ← 共地</text>
+<rect x="860" y="500" width="590" height="100" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
+<text x="878" y="533" class="">灯控模块 / CN301方案</text>
+<text x="878" y="566" class="small">IN ← S1/GPIO3；V+ ← 稳压5V；GND共地</text>
+<path d="M410,200 L860,200" fill="none" stroke="#248b64" stroke-width="3"/>
+<text x="420" y="191.0" class="small">电机端口两线，各一路</text>
+<path d="M410,340 L860,340" fill="none" stroke="#248b64" stroke-width="3"/>
+<text x="420" y="331.0" class="small">D1 → AIN1 / D2 → AIN2</text>
+<path d="M410,535 L860,535" fill="none" stroke="#248b64" stroke-width="3"/>
+<text x="420" y="526.0" class="small">S1 → 灯控IN</text>
+<rect x="45" y="650" width="365" height="155" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
+<text x="63" y="683" class="">电池 → 原主开关</text>
+<text x="63" y="716" class="small">14500 / 7.4V / 800mAh</text>
+<text x="63" y="745" class="small">电池线通向内部</text>
+<text x="63" y="774" class="small">保持原实车保护与供电接法</text>
+<rect x="535" y="650" width="420" height="155" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
+<text x="553" y="683" class="">原稳压 / 供电支路</text>
+<text x="553" y="716" class="small">电机支路：原方案6V → VM</text>
+<text x="553" y="745" class="small">灯支路：稳压5V → 灯V+</text>
+<text x="553" y="774" class="small">板卡支路：按原CyberBrick要求</text>
+<rect x="1080" y="650" width="370" height="155" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
+<text x="1098" y="683" class="">共同GND</text>
+<text x="1098" y="716" class="small">电池负极 / 电源GND</text>
+<text x="1098" y="745" class="small">接收板GND / DRV8833 GND</text>
+<text x="1098" y="774" class="small">灯模块GND</text>
+<path d="M410,745 L535,745" fill="none" stroke="#d36a38" stroke-width="3"/>
+<text x="420" y="736.0" class="small">电源</text>
+<path d="M955,745 L1080,745" fill="none" stroke="#666666" stroke-width="3"/>
+<text x="965" y="736.0" class="small">共地</text>
+<text x="45" y="860" class="small">使能/休眠脚：按实物模块确认。旧图写STBY，部分模块标nSLEEP；不要照名称猜针脚。</text>
+<text x="45" y="900" class="small">未确认项：稳压器型号、板卡供电端、灯模块接头顺序。不能把7.4V电池直接替代各路稳压输出。</text>
+<text x="45" y="940" class="small">逐线连接、版本差异与校准步骤见 05_docs/HARDWARE_CONNECTIONS.md；接线依据当前源码与现有工程资料。</text>
+</svg>

@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820">
+  <defs>
+    <style>
+      text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: #17202a; }
+      .title { font-size: 28px; font-weight: 700; }
+      .label { font-size: 18px; font-weight: 700; }
+      .small { font-size: 15px; }
+      .pin { font-size: 14px; }
+      .box { fill: #ffffff; stroke: #243447; stroke-width: 2; rx: 12; }
+      .core { fill: #eef7ff; }
+      .drv { fill: #fff5f5; }
+      .motor { fill: #f7fff0; }
+      .power { fill: #fffbe8; }
+      .sig { stroke: #2266cc; stroke-width: 3; fill: none; }
+      .pwr { stroke: #d14b27; stroke-width: 4; fill: none; }
+      .gnd { stroke: #333333; stroke-width: 4; fill: none; }
+      .stby { stroke: #7b3fc6; stroke-width: 3; fill: none; }
+      .mot { stroke: #168a5b; stroke-width: 4; fill: none; }
+      .note { fill: #fff7d6; stroke: #d8a600; stroke-width: 1.5; rx: 8; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="820" fill="#fafafa"/>
+  <text class="title" x="40" y="48">CyberBrick + 两块 DRV8833 三轮全向小车接线图</text>
+
+  <rect class="box core" x="50" y="100" width="270" height="430"/>
+  <text class="label" x="82" y="135">CyberBrick Core</text>
+  <text class="small" x="82" y="162">ESP32-C3 / MicroPython</text>
+
+  <text class="pin" x="86" y="205">GPIO3  -> W1 AIN1</text>
+  <text class="pin" x="86" y="235">GPIO2  -> W1 AIN2</text>
+  <text class="pin" x="86" y="275">GPIO1  -> W2 BIN1</text>
+  <text class="pin" x="86" y="305">GPIO0  -> W2 BIN2</text>
+  <text class="pin" x="86" y="355">GPIO21 -> W3 AIN1</text>
+  <text class="pin" x="86" y="385">GPIO20 -> W3 AIN2</text>
+  <text class="pin" x="86" y="445">3V3    -> STBY x2</text>
+  <text class="pin" x="86" y="485">GND    -> DRV GND x2</text>
+
+  <rect class="box drv" x="470" y="110" width="280" height="260"/>
+  <text class="label" x="500" y="145">DRV-A</text>
+  <text class="small" x="500" y="172">控制 W1 左前轮 + W2 右前轮</text>
+  <text class="pin" x="500" y="215">AIN1 / AIN2 -> W1 控制</text>
+  <text class="pin" x="500" y="245">BIN1 / BIN2 -> W2 控制</text>
+  <text class="pin" x="500" y="295">VM -> 6V+</text>
+  <text class="pin" x="500" y="325">GND -> 共地</text>
+  <text class="pin" x="500" y="355">STBY -> 3V3</text>
+
+  <rect class="box drv" x="470" y="440" width="280" height="230"/>
+  <text class="label" x="500" y="475">DRV-B</text>
+  <text class="small" x="500" y="502">只用 A 路控制 W3 后轮</text>
+  <text class="pin" x="500" y="545">AIN1 / AIN2 -> W3 控制</text>
+  <text class="pin" x="500" y="585">BIN1 / BIN2 空着</text>
+  <text class="pin" x="500" y="625">VM -> 6V+，GND -> 共地</text>
+  <text class="pin" x="500" y="655">STBY -> 3V3</text>
+
+  <rect class="box motor" x="900" y="110" width="220" height="95"/>
+  <text class="label" x="945" y="148">W1 左前轮</text>
+  <text class="small" x="935" y="178">接 DRV-A AO1 / AO2</text>
+
+  <rect class="box motor" x="900" y="260" width="220" height="95"/>
+  <text class="label" x="945" y="298">W2 右前轮</text>
+  <text class="small" x="935" y="328">接 DRV-A BO1 / BO2</text>
+
+  <rect class="box motor" x="900" y="500" width="220" height="95"/>
+  <text class="label" x="955" y="538">W3 后轮</text>
+  <text class="small" x="935" y="568">接 DRV-B AO1 / AO2</text>
+
+  <rect class="box power" x="50" y="610" width="270" height="130"/>
+  <text class="label" x="86" y="648">6V 电机电源</text>
+  <text class="small" x="86" y="680">正极 -> 两块 DRV8833 VM</text>
+  <text class="small" x="86" y="710">负极 -> 两块 DRV8833 GND</text>
+
+  <path class="sig" d="M320 200 C390 200 410 200 470 210"/>
+  <path class="sig" d="M320 230 C390 230 410 230 470 230"/>
+  <path class="sig" d="M320 270 C390 270 410 270 470 245"/>
+  <path class="sig" d="M320 300 C390 300 410 300 470 265"/>
+  <path class="sig" d="M320 350 C390 390 420 505 470 540"/>
+  <path class="sig" d="M320 380 C390 420 420 535 470 565"/>
+
+  <path class="stby" d="M320 445 C400 445 410 355 470 350"/>
+  <path class="stby" d="M320 450 C400 460 410 650 470 650"/>
+
+  <path class="gnd" d="M320 485 C410 485 420 325 470 325"/>
+  <path class="gnd" d="M320 492 C410 520 420 625 470 625"/>
+  <path class="gnd" d="M320 710 C410 710 430 625 470 625"/>
+  <path class="gnd" d="M320 710 C410 710 430 325 470 325"/>
+
+  <path class="pwr" d="M320 680 C410 680 430 295 470 295"/>
+  <path class="pwr" d="M320 680 C410 680 430 615 470 615"/>
+
+  <path class="mot" d="M750 210 C830 180 840 155 900 155"/>
+  <path class="mot" d="M750 245 C830 270 840 305 900 305"/>
+  <path class="mot" d="M750 545 C830 545 840 545 900 545"/>
+
+  <rect class="note" x="390" y="720" width="720" height="60"/>
+  <text class="small" x="415" y="746">注意：CyberBrick 的 3V3/5V 不能给电机供电。电机只接 6V 电源到 VM。</text>
+  <text class="small" x="415" y="770">必须共地：CyberBrick GND、两块 DRV8833 GND、6V 电源负极接在一起。</text>
+</svg>

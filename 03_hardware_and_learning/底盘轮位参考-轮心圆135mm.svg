@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="-120 -120 240 240">
+  <defs>
+    <style>
+      .axis { stroke: #999; stroke-width: 0.4; stroke-dasharray: 2 2; }
+      .center-circle { fill: none; stroke: #2f6feb; stroke-width: 1.2; stroke-dasharray: 4 3; }
+      .outer-circle { fill: none; stroke: #777; stroke-width: 0.8; stroke-dasharray: 3 3; }
+      .support { fill: rgba(255, 80, 80, 0.12); stroke: #ff5050; stroke-width: 1; }
+      .phone { fill: rgba(30, 180, 120, 0.14); stroke: #1f9d6a; stroke-width: 1; }
+      .tray { fill: none; stroke: #1f9d6a; stroke-width: 0.8; stroke-dasharray: 4 2; }
+      .wheel { fill: #222; stroke: #000; stroke-width: 0.8; }
+      .motor { stroke: #555; stroke-width: 8; stroke-linecap: round; }
+      .point { fill: #2f6feb; }
+      .label { font-family: Arial, sans-serif; font-size: 5px; fill: #111; }
+      .dim { font-family: Arial, sans-serif; font-size: 4px; fill: #444; }
+    </style>
+  </defs>
+
+  <rect x="-120" y="-120" width="240" height="240" fill="#fff"/>
+  <line class="axis" x1="-116" y1="0" x2="116" y2="0"/>
+  <line class="axis" x1="0" y1="-116" x2="0" y2="116"/>
+  <text class="dim" x="105" y="-3">+X</text>
+  <text class="dim" x="3" y="-108">+Y/front</text>
+
+  <g transform="scale(1,-1)">
+    <circle class="center-circle" cx="0" cy="0" r="67.5"/>
+    <circle class="outer-circle" cx="0" cy="0" r="91"/>
+    <polygon class="support" points="-58.5,33.75 58.5,33.75 0,-67.5"/>
+
+    <rect class="tray" x="-45" y="-87.5" width="90" height="175" rx="3"/>
+    <rect class="phone" x="-35" y="-80" width="70" height="160" rx="3"/>
+
+    <line class="motor" x1="-39" y1="22.5" x2="-58.5" y2="33.75"/>
+    <line class="motor" x1="39" y1="22.5" x2="58.5" y2="33.75"/>
+    <line class="motor" x1="0" y1="-45" x2="0" y2="-67.5"/>
+
+    <g transform="translate(-58.5 33.75) rotate(60)">
+      <rect class="wheel" x="-23.5" y="-10" width="47" height="20" rx="5"/>
+    </g>
+    <g transform="translate(58.5 33.75) rotate(120)">
+      <rect class="wheel" x="-23.5" y="-10" width="47" height="20" rx="5"/>
+    </g>
+    <g transform="translate(0 -67.5) rotate(0)">
+      <rect class="wheel" x="-23.5" y="-10" width="47" height="20" rx="5"/>
+    </g>
+
+    <circle class="point" cx="-58.5" cy="33.75" r="2"/>
+    <circle class="point" cx="58.5" cy="33.75" r="2"/>
+    <circle class="point" cx="0" cy="-67.5" r="2"/>
+    <circle class="point" cx="0" cy="0" r="2"/>
+  </g>
+
+  <text class="label" x="-108" y="-111">Wheel center circle: R=67.5 mm, D=135 mm</text>
+  <text class="label" x="-108" y="-103">Outer footprint with 47 mm wheels: R≈91 mm, D≈182 mm</text>
+  <text class="label" x="-102" y="-30">W1 (-58.5, +33.75)</text>
+  <text class="label" x="35" y="-30">W2 (+58.5, +33.75)</text>
+  <text class="label" x="5" y="74">W3 (0, -67.5)</text>
+  <text class="label" x="4" y="-3">C</text>
+  <text class="dim" x="-36" y="0">phone 160 x 70 mm centered</text>
+</svg>
