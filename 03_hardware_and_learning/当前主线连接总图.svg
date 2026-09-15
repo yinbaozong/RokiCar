@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000"><rect width="1500" height="1000" fill="#f6f8f7"/><style>text{font-family:Microsoft YaHei,Arial,sans-serif;fill:#183229;font-size:20px}.small{font-size:17px}.title{font-size:32px;font-weight:bold}</style>
-<text x="45" y="55" class="title">RIFT / OmniCar · 当前主线模块连接图</text>
+<text x="45" y="55" class="title">RokiCar · 当前主线模块连接图</text>
 <text x="45" y="90" class="small">Android 1.21 + CyberBrick M1/M2 + 外接DRV8833；模块级连接示意，非PCB原理图</text>
 <rect x="45" y="135" width="365" height="440" rx="12" fill="white" stroke="#46a071" stroke-width="2"/>
 <text x="63" y="168" class="">CyberBrick 核心＋接收板</text>
-<text x="63" y="201" class="small">Wi-Fi：OmniCar</text>
+<text x="63" y="201" class="small">Wi-Fi：RokiCar</text>
 <text x="63" y="230" class="small">WebSocket：192.168.4.1/ws</text>
 <text x="63" y="259" class="small"></text>
 <text x="63" y="288" class="small">M1 → W1左前轮</text>

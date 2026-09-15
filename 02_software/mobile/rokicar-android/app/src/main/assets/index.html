@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>RokiCar</title>
+  <style>
+    :root { --ink:#152019; --muted:#647168; --line:#cfd8d2; --surface:#fff; --soft:#eef3ef; --accent:#138653; --accent-soft:#e5f5ec; --danger:#a13b32; --danger-soft:#fff0ed; }
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    html { min-height:100%; overflow-x:hidden; overflow-y:auto; overscroll-behavior-y:auto; }
+    body { min-height:100dvh; margin:0; padding:calc(12px + env(safe-area-inset-top)) 12px calc(116px + env(safe-area-inset-bottom)); overflow-x:hidden; overflow-y:visible; touch-action:pan-y; -webkit-overflow-scrolling:touch; background:#f4f6f3; color:var(--ink); font-family:Arial,"Microsoft YaHei",sans-serif; letter-spacing:0; }
+    button,input { font:inherit; }
+    button { color:inherit; -webkit-tap-highlight-color:transparent; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    main { width:min(100%,430px); margin:auto; display:grid; gap:12px; }
+    header { min-height:44px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .header-states { display:flex; align-items:center; gap:6px; }
+    h1 { margin:0; font-size:24px; }
+    .state { flex:none; padding:7px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font:13px Consolas,monospace; }
+    .state.ok { color:#087342; border-color:#61ad83; background:#edf9f2; }
+    .state.warn { color:#92501b; border-color:#d3a071; background:#fff8e9; }
+    .signal { min-width:92px; text-align:center; }
+    .signal.strong { color:#087342; border-color:#61ad83; background:#edf9f2; }
+    .signal.good { color:#456a22; border-color:#94b86d; background:#f3f9eb; }
+    .signal.weak { color:#92501b; border-color:#d3a071; background:#fff8e9; }
+    .signal.poor { color:#8d2e27; border-color:#d29a91; background:var(--danger-soft); }
+    .surface { padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); display:grid; gap:11px; }
+    .tab-view { animation:tab-in 150ms ease-out; }
+    .section-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:2px 0 5px; border-bottom:1px solid var(--line); }
+    .section-heading h2 { margin:0; font-size:19px; }
+    .section-heading p { margin:3px 0 0; color:var(--muted); font-size:12px; line-height:1.4; }
+    .section-mark { color:var(--accent); font:700 14px Consolas,monospace; }
+    .toolbar { display:grid; gap:7px; }
+    .toolbar-row { display:grid; grid-template-columns:46px 1fr; align-items:center; gap:7px; }
+    .toolbar-label { color:var(--muted); font-size:13px; }
+    .segments { display:grid; gap:3px; padding:3px; border-radius:7px; background:var(--soft); }
+    .segments.mode { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .segments.speed { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .segments button { min-width:0; min-height:38px; padding:4px 2px; border:0; border-radius:5px; background:transparent; font-size:13px; }
+    .segments button[aria-pressed="true"] { color:#075f39; background:#fff; box-shadow:0 1px 4px rgba(19,42,28,.12); }
+    .front { display:flex; justify-content:center; align-items:center; gap:5px; color:var(--muted); font-size:13px; }
+    .front strong { color:var(--ink); font-size:19px; }
+    .panel { min-height:270px; display:grid; place-items:center; align-content:center; gap:10px; }
+    .rotate-key,.tool-button,.tilt-button { border:1px solid #aebbb2; border-radius:7px; background:#fff; touch-action:none; user-select:none; }
+    .rotate-key:active,.rotate-key.active { color:#086b41; border-color:#58a87c; background:var(--accent-soft); }
+    .stick { position:relative; width:244px; aspect-ratio:1; border:2px solid #b8c4bc; border-radius:50%; background:var(--soft); box-shadow:inset 0 2px 12px rgba(0,0,0,.06); touch-action:none; user-select:none; overflow:hidden; }
+    .stick::before,.stick::after { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:#c4cec7; }
+    .stick::before { width:2px; height:82%; }
+    .stick::after { width:82%; height:2px; }
+    .knob { width:72px; aspect-ratio:1; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border:2px solid #087144; border-radius:50%; background:var(--accent); box-shadow:0 5px 14px rgba(0,0,0,.17); pointer-events:none; }
+    .dual { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; touch-action:none; }
+    .dual-unit { min-width:0; display:grid; justify-items:center; gap:8px; color:var(--muted); font-size:13px; }
+    .dual .stick { width:100%; height:144px; aspect-ratio:auto; border-radius:8px; }
+    .dual .knob { width:52px; }
+    .dual #move-stick::after,.dual #rotate-stick::before { display:none; }
+    .dual #move-stick::before { height:76%; }
+    .dual #rotate-stick::after { width:76%; }
+    .tilt-stage { width:228px; aspect-ratio:1; position:relative; border:2px solid #b8c4bc; border-radius:50%; background:var(--soft); overflow:hidden; }
+    .tilt-stage::before,.tilt-stage::after { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:#c4cec7; }
+    .tilt-stage::before { width:2px; height:80%; }
+    .tilt-stage::after { width:80%; height:2px; }
+    .tilt-dot { width:54px; aspect-ratio:1; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border:2px solid #087144; border-radius:50%; background:var(--accent); transition:transform 40ms linear; }
+    .tilt-stage.calibrating .tilt-dot { background:#c58b20; border-color:#8d641c; }
+    .tilt-readout { width:100%; display:flex; justify-content:space-around; color:var(--muted); font:12px Consolas,monospace; }
+    .tilt-actions { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .tilt-button { min-height:44px; padding:6px; font-size:14px; }
+    .tilt-button.armed { color:#075f39; border-color:#58a87c; background:var(--accent-soft); }
+    .tilt-button.active { color:#fff; border-color:#086b41; background:#138653; }
+    .dual-landscape-button { width:100%; min-height:42px; border:1px solid #aebbb2; border-radius:7px; background:#fff; }
+    .rotation { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .rotate-key { min-height:48px; display:flex; justify-content:center; align-items:center; gap:7px; font-size:15px; font-weight:700; }
+    .rotate-key b { font-size:24px; line-height:1; }
+    .metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; font:12px Consolas,monospace; }
+    .metrics span { min-width:0; padding:8px 2px; border:1px solid #d9e0db; border-radius:6px; text-align:center; background:#fafcf9; overflow:hidden; }
+    .emergency-stop { position:fixed; z-index:12; right:max(14px,calc((100vw - 430px)/2 + 14px)); bottom:calc(75px + env(safe-area-inset-bottom)); width:54px; height:54px; border:1px solid #c46c63; border-radius:50%; color:#fff; background:var(--danger); box-shadow:0 5px 16px rgba(96,31,26,.28); font-size:20px; font-weight:700; touch-action:none; }
+    .emergency-stop:active { transform:scale(.96); background:#7d2923; }
+    .tools { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    #wifi-return { grid-column:1/-1; color:#075f39; border-color:#58a87c; background:var(--accent-soft); }
+    #wifi-return.running { color:#8d2e27; border-color:#d29a91; background:var(--danger-soft); }
+    #clear-path { grid-column:1/-1; }
+    .path-state { grid-column:1/-1; padding:8px 10px; border-radius:6px; background:var(--soft); color:var(--muted); font:12px/1.4 Consolas,monospace; }
+    .rssi-grid { grid-column:1/-1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; overflow:hidden; border:1px solid var(--line); border-radius:6px; background:var(--line); }
+    .rssi-grid span { min-width:0; padding:8px; background:#fff; color:var(--muted); font:12px Consolas,monospace; }
+    .rssi-target-control { grid-column:1/-1; display:grid; grid-template-columns:1fr 104px; gap:8px; align-items:center; color:var(--muted); font-size:13px; }
+    .rssi-target-control input { width:100%; min-height:42px; padding:6px 9px; border:1px solid #aebbb2; border-radius:6px; background:#fff; font:14px Consolas,monospace; }
+    .rssi-chart-wrap { grid-column:1/-1; display:grid; gap:5px; }
+    #rssi-chart { width:100%; height:150px; border:1px solid var(--line); border-radius:6px; background:#101712; }
+    .chart-caption { color:var(--muted); font:11px Consolas,monospace; }
+    .tool-button { min-height:48px; padding:7px; background:var(--surface); font-size:14px; }
+    details { border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    summary { min-height:48px; display:flex; align-items:center; cursor:pointer; font-weight:700; }
+    .cal { padding:0 2px 12px; display:grid; gap:10px; }
+    .cal-step { padding:10px 0; border-top:1px solid var(--line); display:grid; gap:8px; }
+    .cal-step:first-child { border-top:0; padding-top:0; }
+    .cal-step strong { font-size:14px; }
+    .cal-step p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
+    .map-row { display:grid; grid-template-columns:52px 1fr 1fr; gap:7px; align-items:center; font-size:13px; }
+    .map-row select { min-width:0; min-height:40px; border:1px solid #aebbb2; border-radius:6px; background:#fff; padding:4px; }
+    .cal-result { padding:9px; background:var(--soft); border-radius:6px; color:var(--ink); font:12px/1.5 Consolas,monospace; }
+    .gain { display:grid; grid-template-columns:32px 1fr 44px; gap:8px; align-items:center; font:13px Consolas,monospace; }
+    .wheel-tests,.turn-inputs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+    .wheel-tests button { min-height:48px; border:1px solid #aebbb2; border-radius:7px; background:#fff; }
+    .wheel-tests button.running { color:#075f39; border-color:#58a87c; background:var(--accent-soft); }
+    .wheel-tests button:disabled { opacity:.5; }
+    .turn-inputs label { min-width:0; display:grid; gap:4px; color:var(--muted); font-size:12px; }
+    .turn-inputs input,.gain input[type="number"] { min-width:0; width:100%; min-height:40px; padding:5px; border:1px solid #aebbb2; border-radius:6px; background:#fff; }
+    .cal-progress { min-height:38px; padding:9px; border-radius:6px; background:var(--soft); color:var(--muted); font:12px/1.5 Consolas,monospace; }
+    input[type="range"] { width:100%; accent-color:var(--accent); }
+    .cal-foot { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .cal-foot button { min-height:42px; border:1px solid #aebbb2; border-radius:7px; background:#fff; }
+    .voice-state { min-height:42px; padding:9px 10px; display:flex; align-items:center; gap:8px; border-radius:6px; background:var(--soft); color:var(--muted); font-size:13px; }
+    .voice-state::before { content:""; width:9px; height:9px; flex:none; border-radius:50%; background:#8b9690; }
+    .live-transcript { min-height:52px; padding:10px; border:1px solid #a9cdb6; border-radius:6px; background:#edf8f0; color:#075f39; font:14px/1.5 system-ui,sans-serif; }
+    .voice-state.listening::before,.voice-state.ready::before { background:var(--accent); }
+    .voice-state.error::before { background:var(--danger); }
+    .xiaomai-face { height:116px; position:relative; display:flex; justify-content:center; align-items:center; gap:24px; overflow:hidden; border-bottom:1px solid var(--line); background:#f0f5f1; }
+    .xiaomai-face::after { content:"小麦"; position:absolute; right:12px; bottom:8px; color:#5d6d63; font:700 12px Consolas,monospace; }
+    .eye { width:72px; height:54px; position:relative; overflow:hidden; border:3px solid #173126; border-radius:50%; background:#fff; animation:blink 5s infinite; }
+    .pupil { width:25px; height:25px; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%; background:var(--accent); transition:transform .18s ease,background .18s ease; }
+    .xiaomai-face.listening .pupil { transform:translate(-50%,-50%) scale(1.16); }
+    .xiaomai-face.thinking .pupil { animation:look 1.1s ease-in-out infinite alternate; }
+    .xiaomai-face.speaking .pupil { box-shadow:0 0 0 8px rgba(19,134,83,.13); }
+    .xiaomai-face.error .pupil { background:var(--danger); }
+    @keyframes blink { 0%,45%,49%,100%{height:54px} 47%{height:5px} }
+    @keyframes look { from{transform:translate(-78%,-50%)} to{transform:translate(-22%,-50%)} }
+    .voice-actions,.voice-command { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .secret-grid { display:grid; gap:8px; }
+    .secret-grid label { display:grid; gap:4px; color:var(--muted); font-size:12px; }
+    .secret-grid input,.voice-command input,.distance-inputs input { min-width:0; width:100%; min-height:42px; padding:7px 9px; border:1px solid #aebbb2; border-radius:6px; background:#fff; }
+    .conversation { min-height:150px; max-height:270px; padding:10px; display:grid; align-content:start; gap:8px; overflow-y:auto; background:var(--soft); overscroll-behavior:contain; }
+    .message { max-width:88%; padding:8px 10px; border-radius:6px; font-size:13px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .message.user { justify-self:end; color:#fff; background:#26332b; }
+    .message.assistant { justify-self:start; border-left:3px solid var(--accent); background:#fff; }
+    .message.partial { opacity:.65; }
+    .conversation-empty { margin:auto; color:var(--muted); font-size:13px; }
+    .chat-composer { position:sticky; z-index:4; bottom:calc(62px + env(safe-area-inset-bottom)); padding:8px 0; background:#fff; }
+    .car-map { height:184px; position:relative; border:1px solid var(--line); border-radius:6px; background:#f5f8f5; }
+    .car-map::before { content:""; position:absolute; left:50%; top:25px; width:145px; height:132px; transform:translateX(-50%); clip-path:polygon(50% 0,100% 88%,0 88%); background:#dfe9e2; }
+    .car-map::after { content:"车头 ↑"; position:absolute; left:50%; top:42px; transform:translateX(-50%); color:#0b7043; font-weight:700; }
+    .wheel-mark { position:absolute; min-width:62px; padding:7px 5px; border:2px solid #26342c; border-radius:5px; background:#fff; text-align:center; font:12px Consolas,monospace; }
+    .wheel-mark.w1 { left:20px; top:58px; transform:rotate(-30deg); }
+    .wheel-mark.w2 { right:20px; top:58px; transform:rotate(30deg); }
+    .wheel-mark.w3 { left:50%; bottom:6px; transform:translateX(-50%); }
+    .wizard-grid { display:grid; gap:8px; }
+    .wizard-row { display:grid; grid-template-columns:54px 1fr 1fr; gap:7px; align-items:center; font-size:13px; }
+    .wizard-row select,.wizard-row input { min-width:0; width:100%; min-height:40px; border:1px solid #aebbb2; border-radius:6px; background:#fff; padding:5px; }
+    .shape-modal { position:fixed; z-index:30; inset:0; display:grid; place-items:center; padding:20px; background:rgba(16,25,19,.58); }
+    .shape-dialog { width:min(100%,390px); padding:16px; border-radius:7px; background:#fff; box-shadow:0 18px 50px rgba(0,0,0,.26); }
+    .shape-dialog canvas { width:100%; height:230px; display:block; border:1px solid var(--line); background:#f5f8f5; }
+    .shape-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+    .distance-inputs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+    .distance-inputs label { min-width:0; display:grid; gap:4px; color:var(--muted); font-size:12px; }
+    .status { min-height:44px; margin:0; padding:2px; white-space:pre-wrap; font:12px/1.45 Consolas,monospace; color:var(--muted); }
+    .global-status { padding:9px 12px; border-left:3px solid var(--accent); background:#e8ede9; border-radius:0 6px 6px 0; }
+    .bottom-nav { position:fixed; z-index:10; left:50%; bottom:0; width:min(100%,460px); transform:translateX(-50%); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:2px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:rgba(255,255,255,.98); box-shadow:0 -4px 18px rgba(24,42,31,.1); }
+    .bottom-nav button { min-width:0; min-height:54px; padding:5px 2px; border:0; border-radius:6px; display:grid; place-items:center; align-content:center; gap:2px; color:var(--muted); background:transparent; font-size:12px; }
+    .bottom-nav button span { min-height:19px; font:700 17px/1 Consolas,monospace; }
+    .bottom-nav button[aria-current="page"] { color:#086b41; background:var(--accent-soft); }
+    @keyframes tab-in { from { opacity:.55; transform:translateY(4px); } to { opacity:1; transform:none; } }
+    @media(max-width:350px){ body{padding-left:9px;padding-right:9px}.surface{padding:10px}.segments button{font-size:12px}.panel{min-height:250px}.stick{width:222px}.dual{gap:7px}.dual .stick{height:132px}.tilt-stage{width:212px}.emergency-stop{right:10px} }
+    .dual-fullscreen { position:fixed; z-index:40; inset:0; display:block; background:#f4f6f3; touch-action:none; overflow:hidden; }
+    .full-slider-unit { position:absolute; top:46%; width:min(29vw,250px); transform:translateY(-50%); display:grid; justify-items:center; gap:7px; color:var(--muted); text-align:center; font-size:13px; }
+    .full-slider-unit.left { left:max(4vw,env(safe-area-inset-left)); }
+    .full-slider-unit.right { right:max(4vw,env(safe-area-inset-right)); }
+    .full-stick { position:relative; width:100%; aspect-ratio:1; border:3px solid #91a399; border-radius:50%; background:#dfe7e1; box-shadow:inset 0 3px 16px rgba(18,46,29,.1); touch-action:none; user-select:none; overflow:hidden; }
+    .full-stick::before,.full-stick::after { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:#b9c5bd; }
+    .full-stick::before { width:3px; height:72%; }
+    .full-stick::after { width:72%; height:3px; }
+    .full-stick.vertical::after,.full-stick.horizontal::before { display:none; }
+    .full-stick .knob { display:block; position:absolute; z-index:2; left:50%; top:50%; width:clamp(62px,10vh,82px); height:clamp(62px,10vh,82px); aspect-ratio:auto; transform:translate(-50%,-50%); border:3px solid #087144; border-radius:50%; background:#138653; box-shadow:0 6px 16px rgba(0,0,0,.22); pointer-events:none; }
+    .full-exit,.full-rotate { border:1px solid #aebbb2; border-radius:7px; background:#fff; font-weight:700; touch-action:none; user-select:none; }
+    .full-exit { position:absolute; z-index:2; left:50%; top:max(10px,env(safe-area-inset-top)); width:min(32vw,220px); min-height:40px; transform:translateX(-50%); color:#8d2e27; border-color:#d29a91; font-size:14px; }
+    .full-rotation-bar { position:absolute; left:max(14px,env(safe-area-inset-left)); right:max(14px,env(safe-area-inset-right)); bottom:max(10px,env(safe-area-inset-bottom)); display:grid; grid-template-columns:1fr 1fr; gap:clamp(40px,12vw,140px); }
+    .full-rotate { min-height:54px; font-size:clamp(16px,2.5vw,22px); }
+    .full-rotate:active,.full-rotate.active { color:#075f39; border-color:#58a87c; background:var(--accent-soft); }
+    .tilt-actions.single-action { grid-template-columns:1fr; }
+    @media(max-height:390px) and (orientation:landscape){ .full-slider-unit{top:45%;width:min(27vw,230px)}.full-rotation-bar{bottom:7px}.full-rotate{min-height:48px}.full-exit{top:7px;min-height:36px} }
+    @media(orientation:landscape){ body.dual-landscape { height:100dvh; padding:0; overflow:hidden; } body.dual-landscape main,.dual-landscape .bottom-nav,.dual-landscape .emergency-stop { visibility:hidden; } }
+    @media(orientation:portrait){ .dual-fullscreen { display:none !important; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>RokiCar</h1><div class="header-states"><span id="wifi-signal" class="state signal">Wi-Fi --</span><span id="connection" class="state warn">连接中</span></div></header>
+  <section id="tab-control" class="tab-view surface" aria-label="基本操控">
+    <div class="toolbar">
+      <div class="toolbar-row"><span class="toolbar-label">模式</span><div id="modes" class="segments mode">
+        <button data-mode="single" aria-pressed="true">单摇杆</button><button data-mode="dual" aria-pressed="false">双控制</button><button data-mode="tilt" aria-pressed="false">陀螺仪</button>
+      </div></div>
+      <div class="toolbar-row"><span class="toolbar-label">速度</span><div id="speeds" class="segments speed">
+        <button data-speed="slow" aria-pressed="false">慢速</button><button data-speed="standard" aria-pressed="true">标准</button><button data-speed="fast" aria-pressed="false">快速</button><button data-speed="extreme" aria-pressed="false">极速</button>
+      </div></div>
+    </div>
+    <div class="front"><span>车头</span><strong>↑</strong></div>
+    <div id="panel-single" class="panel"><div id="single-stick" class="stick" aria-label="平移摇杆"><div id="single-knob" class="knob"></div></div></div>
+    <div id="panel-dual" class="panel" hidden><div class="dual">
+      <div class="dual-unit"><div id="move-stick" class="stick" aria-label="油门摇杆"><div id="move-knob" class="knob"></div></div><span>油门：前进 / 后退</span></div>
+      <div class="dual-unit"><div id="rotate-stick" class="stick" aria-label="转向摇杆"><div id="rotate-knob" class="knob"></div></div><span>转向：左转 / 右转</span></div>
+    </div><button id="dual-landscape" class="dual-landscape-button">进入横屏双控制</button></div>
+    <div id="panel-tilt" class="panel" hidden>
+      <div class="status">启动后默认控制前后左右平移；开启航向转向时只响应手机旋转，关闭后自动恢复平移。</div>
+      <div id="tilt-stage" class="tilt-stage"><div id="tilt-dot" class="tilt-dot"></div></div>
+      <div class="tilt-readout"><span id="roll">横滚 0.0°</span><span id="pitch">俯仰 0.0°</span><span id="heading">航向 --°</span></div>
+      <div class="tilt-actions single-action"><button id="tilt-toggle" class="tilt-button">启动陀螺仪</button></div>
+      <div class="tilt-actions single-action"><button id="heading-toggle" class="tilt-button" disabled>航向转向：关（当前平移）</button></div>
+      <div id="sensor-state" class="status">等待传感器检测</div>
+    </div>
+    <div id="rotation-buttons" class="rotation"><button id="rotate-left" class="rotate-key" aria-label="原地左转"><b>↺</b>原地左转</button><button id="rotate-right" class="rotate-key" aria-label="原地右转"><b>↻</b>原地右转</button></div>
+    <div class="metrics"><span id="vx">VX 0.00</span><span id="vy">VY 0.00</span><span id="rot">ROT 0.00</span></div>
+  </section>
+  <section id="tab-ai" class="tab-view surface" aria-label="AI 操作" hidden>
+    <p style="text-align:center;padding:64px 16px;color:#62676b">待开发中</p>
+    <div hidden inert>
+    <div class="section-heading"><div><h2>小麦</h2><p>说“小麦小麦”唤醒，AI 决定动作、速度和时长</p></div><span class="section-mark">AI</span></div>
+    <div id="xiaomai-face" class="xiaomai-face" aria-label="小麦状态"><div class="eye"><span class="pupil"></span></div><div class="eye"><span class="pupil"></span></div></div>
+    <div id="voice-state" class="voice-state">语音模块等待配置</div>
+    <div id="live-transcript" class="live-transcript" aria-live="assertive">实时识别：等待你说话</div>
+    <div class="voice-actions"><button id="voice-toggle" class="tool-button">开启“小麦小麦”监听</button><button id="voice-wake-test" class="tool-button">模拟唤醒</button></div>
+    <div class="cal-step"><strong>对话记录</strong><div id="voice-conversation" class="conversation" aria-live="polite"><div class="conversation-empty">还没有语音或文字指令</div></div><button id="voice-clear" class="tool-button">清空对话记录</button></div>
+    <div class="cal-step chat-composer"><strong>文字指令</strong><div class="voice-command"><input id="voice-text" placeholder="例如：画一个小心形"><button id="voice-send" class="tool-button">发送</button></div></div>
+    <details id="voice"><summary>AI 云端配置</summary><div class="cal"><p>连接 RokiCar 时请同时开启移动数据，并允许手机对“无互联网 Wi-Fi”使用蜂窝网络；语音识别和 DeepSeek 都需要互联网。</p><div class="secret-grid">
+      <label>阿里云百炼 API Key<input id="aliyun-key" type="password" autocomplete="off" placeholder="通常以 sk- 开头"></label>
+      <label>DeepSeek API Key<input id="deepseek-key" type="password" autocomplete="off" placeholder="未填写时使用本地基础指令"></label>
+    </div><button id="voice-save" class="tool-button">安全保存到本机</button><div id="voice-config-state" class="cal-result">正在读取配置</div></div></details>
+    </div>
+  </section>
+  <section id="tab-return" class="tab-view surface" aria-label="返航与路径" hidden>
+    <p style="padding:12px;border-left:4px solid #b37c16;background:#fff4d8;color:#72500d">实验功能 · 返航功能仍在试验阶段</p>
+    <div class="section-heading"><div><h2>返航与路径</h2><p>回放已记录的控制轨迹，并用 Wi-Fi 作辅助判断</p></div><span class="section-mark">↩</span></div>
+    <div class="tools"><button id="wifi-return" class="tool-button">轨迹 + Wi-Fi 混合返航</button><div id="path-state" class="path-state">返航轨迹：尚未记录</div><label class="rssi-target-control"><span>返航终点 RSSI（越接近 0 表示越近）</span><input id="rssi-target-input" type="number" min="-90" max="-20" step="1" value="-35" inputmode="numeric"></label><div class="rssi-grid"><span id="rssi-raw">原始 -- dBm</span><span id="rssi-filtered">平滑 --.- dBm</span><span id="rssi-trend">趋势 等待</span><span id="rssi-target">终点 -35 dBm</span><span id="rssi-rate">读取 -- Hz / 变化 -- Hz</span><span id="rssi-age">数据年龄 --</span></div><div class="rssi-chart-wrap"><canvas id="rssi-chart" width="720" height="300"></canvas><span id="rssi-chart-caption" class="chart-caption">20Hz 连续读取与绘图；灰线为整数原始值，绿线为一位小数平滑值。返航只使用有效变化样本。</span></div><button id="clear-path" class="tool-button">清除返航记录</button></div>
+    <details id="distance-calibration"><summary>返航距离标定</summary><div class="cal">
+      <div class="cal-step"><strong>标定标准档的实际距离</strong><p>分别让小车用标准档运行 3 秒，测量地面上的实际距离并填入毫米。返航仍按原控制轨迹反放，这组数值只负责把记录换算成可读的估算距离。</p>
+        <div class="wheel-tests"><button class="distance-run" data-vx="0" data-vy="0.55">前进 3 秒</button><button class="distance-run" data-vx="0" data-vy="-0.55">后退 3 秒</button><button class="distance-run" data-vx="0.4675" data-vy="0">右移 3 秒</button></div>
+        <div class="distance-inputs"><label>前进 mm<input id="distance-forward" type="number" min="1" inputmode="decimal"></label><label>后退 mm<input id="distance-backward" type="number" min="1" inputmode="decimal"></label><label>横移 mm<input id="distance-lateral" type="number" min="1" inputmode="decimal"></label></div>
+        <button id="distance-save" class="tool-button">保存距离标定</button><div id="distance-state" class="cal-result">尚未标定，当前只记录控制时间</div>
+      </div>
+    </div></details>
+  </section>
+  <section id="tab-settings" class="tab-view surface" aria-label="设置与校准" hidden>
+    <div class="section-heading"><div><h2>设置与校准</h2><p>连接维护和三轮机械误差修正</p></div><span class="section-mark">SET</span></div>
+    <div class="tools"><button id="reconnect" class="tool-button">重新连接小车</button></div>
+    <details id="motor-wizard"><summary>完整电机标定向导（请架空）</summary><div class="cal">
+      <div class="cal-step"><strong>1. 确认三个物理端口</strong><p>屏幕上方就是车头。架空三只轮，依次点按钮：对应轮会用 30% PWM 转 2 秒。M1 应是左前轮，M2 应是右前轮，外接板应是底部后轮。</p><div class="car-map"><span class="wheel-mark w1">M1 左前</span><span class="wheel-mark w2">M2 右前</span><span class="wheel-mark w3">外接 后轮</span></div><div class="wheel-tests"><button class="identify-run" data-port="1">M1 转 2 秒</button><button class="identify-run" data-port="2">M2 转 2 秒</button><button class="identify-run" data-port="3">外接轮转 2 秒</button></div><div class="wizard-grid">
+        <label class="wizard-row"><span>W1</span><select id="map-w1"><option value="1">M1</option><option value="2">M2</option><option value="3">外接</option></select><select id="dir-w1"><option value="1">与图一致</option><option value="-1">与图相反</option></select></label>
+        <label class="wizard-row"><span>W2</span><select id="map-w2"><option value="2">M2</option><option value="1">M1</option><option value="3">外接</option></select><select id="dir-w2"><option value="1">与图一致</option><option value="-1">与图相反</option></select></label>
+        <label class="wizard-row"><span>W3</span><select id="map-w3"><option value="3">外接</option><option value="1">M1</option><option value="2">M2</option></select><select id="dir-w3"><option value="-1">与图相反（建议）</option><option value="1">与图一致</option></select></label>
+      </div></div>
+      <div class="cal-step"><strong>2. 自动寻找最低稳定 PWM</strong><p>逐只点击“开始递增”，观察对应轮子；当它不再嗡鸣而是连续转动时，立即点击“已稳定”。系统会额外增加 2% 余量。</p><div class="wizard-grid">
+        <label class="wizard-row"><span>M1</span><button class="deadzone-run tool-button" data-port="1">开始递增</button><input id="min1" type="number" min="0" max="35" value="0" aria-label="M1 起转百分比"></label>
+        <label class="wizard-row"><span>M2</span><button class="deadzone-run tool-button" data-port="2">开始递增</button><input id="min2" type="number" min="0" max="35" value="0" aria-label="M2 起转百分比"></label>
+        <label class="wizard-row"><span>W3</span><button class="deadzone-run tool-button" data-port="3">开始递增</button><input id="min3" type="number" min="0" max="35" value="0" aria-label="W3 起转百分比"></label>
+      </div><button id="deadzone-confirm" class="tool-button" disabled>这只轮已稳定连续转动</button><div id="wizard-state" class="cal-result">等待开始</div></div>
+      <div class="cal-step"><strong>3. 应用并预览</strong><p>先架空预览；确认方向后再低速落地。右移和原地旋转最容易暴露后轮方向错误。</p><div class="wheel-tests"><button class="preview-motion" data-vx="0" data-vy="0.35" data-rot="0">前进 1秒</button><button class="preview-motion" data-vx="0.35" data-vy="0" data-rot="0">右移 1秒</button><button class="preview-motion" data-vx="0" data-vy="0" data-rot="0.45">右转 1秒</button></div><button id="wizard-save" class="tool-button">应用并保存完整标定</button></div>
+    </div></details>
+    <details id="calibration"><summary>5 秒轮速校准（请架空）</summary><div class="cal">
+    <div class="cal-step"><strong>1. 依次测试三只轮</strong><p>点一次后只有对应轮子运行 5 秒。用手机慢动作录像或在轮上贴标记，记录这 5 秒内转过的圈数。测试时可随时点击红色停止键。</p>
+      <div class="wheel-tests"><button class="wheel-run" data-port="1">测试 M1<br>5 秒</button><button class="wheel-run" data-port="2">测试 M2<br>5 秒</button><button class="wheel-run" data-port="3">测试外接<br>5 秒</button></div>
+      <div id="cal-progress" class="cal-progress">等待测试</div>
+    </div>
+    <div class="cal-step"><strong>2. 填写圈数并计算</strong><p>允许填写小数，例如 8.5 圈。App 会以最慢的轮子为基准，把较快轮子的输出降下来。</p>
+      <div class="turn-inputs"><label>M1 圈数<input id="turn1" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="例如 9.2"></label><label>M2 圈数<input id="turn2" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="例如 8.8"></label><label>外接圈数<input id="turn3" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="例如 9.0"></label></div>
+      <button id="calculate" class="tool-button">计算建议增益</button>
+      <div id="gain-result" class="cal-result">请先填写三只轮的圈数</div>
+    </div>
+    <div class="cal-step"><strong>3. 应用并保存</strong><p>下面数值会由计算按钮自动填写，也可以在落地微调时手动修改。</p>
+      <label class="gain">M1 <input id="g1" type="number" min="0.70" max="1.30" step="0.01" value="1.00"><output></output></label>
+      <label class="gain">M2 <input id="g2" type="number" min="0.70" max="1.30" step="0.01" value="1.00"><output></output></label>
+      <label class="gain">W3 <input id="g3" type="number" min="0.70" max="1.30" step="0.01" value="1.00"><output></output></label>
+      <button id="save" class="tool-button" disabled>确认应用并保存到核心板</button>
+    </div>
+    </div></details>
+  </section>
+  <pre id="status" class="status global-status">请连接 WiFi：RokiCar</pre>
+</main>
+<button id="stop" class="emergency-stop" aria-label="紧急停车" title="紧急停车">■</button>
+<section id="dual-fullscreen" class="dual-fullscreen" hidden aria-label="横屏驾驶控制">
+  <button id="full-exit" class="full-exit">退出横屏控制</button>
+  <div class="full-slider-unit left">
+    <div id="full-move-stick" class="full-stick vertical" aria-label="横屏油门：前进和后退"><div id="full-move-knob" class="knob"></div></div>
+    <span>左摇杆：↑ 前进 / 后退 ↓</span>
+  </div>
+  <div class="full-slider-unit right">
+    <div id="full-rotate-stick" class="full-stick horizontal" aria-label="横屏转向：左转和右转"><div id="full-rotate-knob" class="knob"></div></div>
+    <span>右摇杆：← 左转 / 右转 →</span>
+  </div>
+  <div class="full-rotation-bar">
+    <button id="full-rotate-left" class="full-rotate" aria-label="原地左转">↺ 原地左转</button>
+    <button id="full-rotate-right" class="full-rotate" aria-label="原地右转">↻ 原地右转</button>
+  </div>
+</section>
+<nav id="bottom-nav" class="bottom-nav" aria-label="主导航">
+  <button data-tab="control" aria-current="page"><span>◉</span>操控</button>
+  <button data-tab="ai" aria-current="false"><span>AI</span>助手</button>
+  <button data-tab="return" aria-current="false"><span>↩</span>返航</button>
+  <button data-tab="settings" aria-current="false"><span>⚙</span>设置</button>
+</nav>
+<div id="shape-modal" class="shape-modal" hidden><div class="shape-dialog"><h2 id="shape-title">图形预览</h2><canvas id="shape-canvas" width="700" height="460"></canvas><p id="shape-summary" class="status"></p><div class="shape-actions"><button id="shape-cancel" class="tool-button">取消</button><button id="shape-confirm" class="tool-button">确认执行</button></div></div></div>
+<script src="control-core.js"></script>
+<script>
+const WS_URL='ws://192.168.4.1/ws', DRIVE=1, STOP=2, SQUARE=3, GAINS=4, SAVE=5, PING=6, WHEEL_MAP=7, WHEEL_TEST=8, MOTOR_TEST=9, MOTOR_MODEL=10, QUERY_CONFIG=11;
+const SPEEDS=RokiControl.SPEEDS;
+const MOTION_HISTORY_KEY='omni-motion-history-v2',CONVERSATION_KEY='omni-conversation-v1';
+const connection=document.getElementById('connection'), statusBox=document.getElementById('status');
+const boxes={vx:document.getElementById('vx'),vy:document.getElementById('vy'),rot:document.getElementById('rot')};
+const gains=['g1','g2','g3'].map(id=>document.getElementById(id));
+const sticks={single:[document.getElementById('single-stick'),document.getElementById('single-knob')],move:[document.getElementById('move-stick'),document.getElementById('move-knob')],rotate:[document.getElementById('rotate-stick'),document.getElementById('rotate-knob')],fullMove:[document.getElementById('full-move-stick'),document.getElementById('full-move-knob')],fullRotate:[document.getElementById('full-rotate-stick'),document.getElementById('full-rotate-knob')]};
+let ws=null,reconnectTimer=0,reconnectDelay=250,sequence=0,lastIdlePing=0,pageVisible=true;
+const initialTab=readChoice('rokicar-tab',['control','ai','return','settings'],'control');
+let activeTab='control';
+let mode=readChoice('rokicar-mode',['single','dual','tilt'],'single'),speedName=readChoice('rokicar-speed',Object.keys(SPEEDS),'standard');
+let vx=0,vy=0,rot=0,steeringRaw=0,squareActive=false,squareTimer=0,rotationButtonPointer=null,rotationHoldTimer=0,wheelTestTicker=0,wheelTestUntil=0,gainCalculationValid=false;
+const stickPointers={single:null,move:null,rotate:null,fullMove:null,fullRotate:null};
+let tiltArmed=false,tiltDriving=false,headingTurnEnabled=false,tiltCalibrating=false,tiltSamples=[],tiltNeutral={roll:0,pitch:0},sensorAt=0,calibrationStarted=0,calibrationTimer=0,sensorEvents=0,browserSensorBound=false;
+let headingCurrent=null,headingNeutral=null,headingCarYaw=0,headingAt=0,headingLastAt=0,headingAvailable=true;
+let wifiReturnActive=false,wifiReturnRun=0;
+let motionHistory=readMotionHistory(),tripRecording=motionHistory.length>0,lastMotionRecordAt=0,motionHistoryMs=motionHistory.reduce((sum,item)=>sum+item.duration,0),lastHistoryPersist=0;
+let homeRssi=readHomeRssi(),wifiRecent=[],wifiTrendSamples=[],rssiChartSamples=[],nativeRssi=null,nativeRssiAt=0,lastTrendSampleAt=0,wifiReturnTarget=readRssiTarget();
+let filteredRssi=null,lastObservedRssi=null,lastRssiChangeAt=0,rssiPollTimes=[],rssiChangeTimes=[];
+let timedMotionUntil=0,timedMotionTimer=0,timedMotionRecord=false,voiceEnabled=false;
+let distanceCalibration=readDistanceCalibration();
+const WIFI_TARGET=-35,WIFI_PROBE_SPEED=.75,WIFI_RETURN_SPEED=.85;
+const WIFI_PROBE_DISTANCES=[250,400],WIFI_RETURN_STEP_MS=1600,WIFI_RETURN_MAX_MS=90000;
+let conversationHistory=readConversationHistory(),partialConversationNode=null,pendingShape=null,shapeRun=0,shapeActive=false;
+let activeRampPort=0,activeRampDuty=0,activeRampTimer=0,wheelMap=[1,2,-3],minDuties=[0,0,0];
+
+const clamp=RokiControl.clamp;
+function readChoice(k,a,f){try{const v=localStorage.getItem(k);return a.includes(v)?v:f}catch(_){return f}}
+function saveChoice(k,v){try{localStorage.setItem(k,v)}catch(_){}}
+function readDistanceCalibration(){try{const value=JSON.parse(localStorage.getItem('omni-distance-calibration')||'{}');return{forward:Number(value.forward)||0,backward:Number(value.backward)||0,lateral:Number(value.lateral)||0}}catch(_){return{forward:0,backward:0,lateral:0}}}
+function readMotionState(){try{const state=JSON.parse(localStorage.getItem(MOTION_HISTORY_KEY)||'{}');if(!state.savedAt||Date.now()-state.savedAt>43200000)return{};return state}catch(_){return{}}}
+function readMotionHistory(){const state=readMotionState();return RokiControl.sanitizeMotionHistory(state.history,600000)}
+function readHomeRssi(){const value=Number(readMotionState().homeRssi);return Number.isFinite(value)&&value<0?value:null}
+function readRssiTarget(){const raw=localStorage.getItem('omni-rssi-target');if(raw===null||raw==='')return WIFI_TARGET;const value=Number(raw);return Number.isFinite(value)?Math.max(-90,Math.min(-20,Math.round(value))):WIFI_TARGET}
+function persistMotionHistory(force=false){const now=Date.now();if(!force&&now-lastHistoryPersist<750)return;lastHistoryPersist=now;try{if(!motionHistory.length&&!Number.isFinite(homeRssi))localStorage.removeItem(MOTION_HISTORY_KEY);else localStorage.setItem(MOTION_HISTORY_KEY,JSON.stringify({savedAt:now,homeRssi,history:motionHistory}))}catch(_){}}
+function readConversationHistory(){try{const items=JSON.parse(localStorage.getItem(CONVERSATION_KEY)||'[]');return Array.isArray(items)?items.filter(item=>item&&['user','assistant'].includes(item.role)&&typeof item.text==='string').slice(-30):[]}catch(_){return[]}}
+function speedLimit(){return RokiControl.speedFor(speedName)}
+function refreshDrivingSteering(){rot=RokiControl.drivingSteeringCommand(steeringRaw,speedLimit(),vy)}
+function isRokiCarNetwork(){try{return AndroidSensors.isRokiCarNetwork()}catch(_){return location.hostname==='192.168.4.1'}}
+function readWifiRssi(){try{if(!isRokiCarNetwork())return null;if(Number.isFinite(nativeRssi)&&Date.now()-nativeRssiAt<700)return nativeRssi;const value=Number(AndroidSensors.getWifiRssi());return Number.isFinite(value)&&value>-127&&value<0?value:null}catch(_){return null}}
+function renderWifiSignal(){const element=document.getElementById('wifi-signal');if(!isRokiCarNetwork()){wifiRecent=[];wifiTrendSamples=[];rssiPollTimes=[];rssiChangeTimes=[];filteredRssi=null;lastObservedRssi=null;lastRssiChangeAt=0;element.textContent='未连接小车';element.className='state signal warn';return}const rssi=readWifiRssi();if(rssi===null){element.textContent='Wi-Fi --';element.className='state signal';return}let label='很好',kind='strong';if(rssi<-75){label='很差';kind='poor'}else if(rssi<-65){label='较弱';kind='weak'}else if(rssi<-50){label='良好';kind='good'}element.textContent=`${label} ${rssi}dBm`;element.className=`state signal ${kind}`;renderRssiDiagnostics()}
+function smoothedWifiRssi(){if(Number.isFinite(filteredRssi))return filteredRssi;if(!wifiRecent.length)return readWifiRssi();const values=wifiRecent.slice().sort((a,b)=>a-b);return values[Math.floor(values.length/2)]}
+function currentRssiTrend(){if(lastRssiChangeAt&&Date.now()-lastRssiChangeAt>3500)return{direction:'flat',delta:0};return RokiControl.analyzeRssiTrend(wifiTrendSamples.slice(-5),2)}
+function sampleRate(times){if(times.length<2)return 0;return(times.length-1)*1000/(times[times.length-1]-times[0])}
+function trimSampleTimes(times,now,windowMs=5000){while(times.length&&now-times[0]>windowMs)times.shift()}
+function drawRssiChart(){const canvas=document.getElementById('rssi-chart');if(!canvas)return;const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.fillStyle='#101712';ctx.fillRect(0,0,w,h);const y=value=>(-20-Math.max(-100,Math.min(-20,value)))/80*h;ctx.strokeStyle='#415047';ctx.lineWidth=1;[-30,-50,-70,-90].forEach(value=>{const py=y(value);ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(w,py);ctx.stroke();ctx.fillStyle='#9eaaa2';ctx.font='22px Consolas';ctx.fillText(`${value}`,8,py-5)});ctx.strokeStyle='#d46358';ctx.lineWidth=3;ctx.setLineDash([10,8]);ctx.beginPath();ctx.moveTo(0,y(wifiReturnTarget));ctx.lineTo(w,y(wifiReturnTarget));ctx.stroke();ctx.setLineDash([]);if(rssiChartSamples.length>1){const start=rssiChartSamples[0].time,end=rssiChartSamples[rssiChartSamples.length-1].time,span=Math.max(1,end-start),plot=(field,color,width)=>{ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();rssiChartSamples.forEach((sample,index)=>{const x=(sample.time-start)/span*w,py=y(sample[field]);index?ctx.lineTo(x,py):ctx.moveTo(x,py)});ctx.stroke()};plot('raw','#829087',2);plot('filtered','#37c76a',4)}}
+function renderRssiDiagnostics(){const raw=readWifiRssi(),filtered=smoothedWifiRssi(),trend=currentRssiTrend(),pollHz=sampleRate(rssiPollTimes),changeHz=sampleRate(rssiChangeTimes),age=lastRssiChangeAt?Math.max(0,(Date.now()-lastRssiChangeAt)/1000):null;document.getElementById('rssi-raw').textContent=`原始 ${raw===null?'--':raw.toFixed(0)} dBm`;document.getElementById('rssi-filtered').textContent=`平滑 ${Number.isFinite(filtered)?filtered.toFixed(1):'--.-'} dBm`;document.getElementById('rssi-trend').textContent=`趋势 ${trend.direction==='improving'?'增强':trend.direction==='worsening'?'变弱':trend.direction==='flat'?'平稳':'等待'}${Number.isFinite(trend.delta)?` ${trend.delta>=0?'+':''}${trend.delta.toFixed(1)}`:''}dB`;document.getElementById('rssi-target').textContent=`终点 ${wifiReturnTarget} dBm`;document.getElementById('rssi-rate').textContent=`读取 ${pollHz?pollHz.toFixed(1):'--'} Hz / 变化 ${changeHz?changeHz.toFixed(2):'--'} Hz`;document.getElementById('rssi-age').textContent=`数值年龄 ${age===null?'--':age.toFixed(1)+'s'}`;drawRssiChart()}
+window.onNativeWifiSample=(rssi,at)=>{const value=Number(rssi),time=Number(at)||Date.now();if(!isRokiCarNetwork()||!Number.isFinite(value)||value<=-127||value>=0)return;nativeRssi=value;nativeRssiAt=time;rssiPollTimes.push(time);trimSampleTimes(rssiPollTimes,time);const changed=lastObservedRssi===null||value!==lastObservedRssi;if(changed){lastObservedRssi=value;lastRssiChangeAt=time;rssiChangeTimes.push(time);trimSampleTimes(rssiChangeTimes,time,15000);filteredRssi=filteredRssi===null?value:filteredRssi+.35*(value-filteredRssi);wifiRecent.push(value);if(wifiRecent.length>15)wifiRecent.shift();if(time-lastTrendSampleAt>=250){lastTrendSampleAt=time;wifiTrendSamples.push(value);if(wifiTrendSamples.length>12)wifiTrendSamples.shift()}}else trimSampleTimes(rssiChangeTimes,time,15000);rssiChartSamples.push({raw:value,filtered:Number.isFinite(filteredRssi)?filteredRssi:value,time});while(rssiChartSamples.length&&time-rssiChartSamples[0].time>60000)rssiChartSamples.shift();if(wifiReturnActive&&value>=wifiReturnTarget)finishWifiReturn(`信号达到 ${value} dBm，已返回附近并立即停车`,true);renderRssiDiagnostics()};
+function setConnection(text,kind){connection.textContent=text;connection.className=`state ${kind||''}`}
+function render(){boxes.vx.textContent=`VX ${vx.toFixed(2)}`;boxes.vy.textContent=`VY ${vy.toFixed(2)}`;boxes.rot.textContent=`ROT ${rot.toFixed(2)}`;const s=speedLimit();document.getElementById('tilt-dot').style.transform=`translate(calc(-50% + ${s?vx/s*70:0}px),calc(-50% + ${s?-vy/s*70:0}px))`}
+function isManualActive(){return rotationButtonPointer!==null||Object.values(stickPointers).some(v=>v!==null)}
+function send(type,a=0,b=0,c=0){if(!ws||ws.readyState!==WebSocket.OPEN||ws.bufferedAmount>96)return false;const frame=new ArrayBuffer(12),view=new DataView(frame),aLimit=type===SQUARE?5000:1000,zLimit=type===WHEEL_TEST?5000:type===MOTOR_TEST?3000:1000;view.setUint8(0,1);view.setUint8(1,type);view.setUint32(2,++sequence,true);view.setInt16(6,clamp(Math.round(a),-aLimit,aLimit),true);view.setInt16(8,clamp(Math.round(b),-1000,1000),true);view.setInt16(10,clamp(Math.round(c),-zLimit,zLimit),true);ws.send(frame);return true}
+function sendDrive(){return send(DRIVE,vx*1000,vy*1000,rot*1000)}
+function renderPathState(){const box=document.getElementById('path-state');if(!motionHistoryMs){box.textContent='返航轨迹：尚未记录';return}const estimate=RokiControl.estimatePathDistance(motionHistory,distanceCalibration),distance=estimate.totalMm>0?`，估算 ${(estimate.totalMm/1000).toFixed(2)} 米`:'';box.textContent=`返航轨迹：已记录 ${(motionHistoryMs/1000).toFixed(1)} 秒控制量${distance}，出发点 ${homeRssi??'--'} dBm`}
+function replaceMotionHistory(next,saveNow=false){motionHistory=RokiControl.sanitizeMotionHistory(next,600000);motionHistoryMs=motionHistory.reduce((sum,item)=>sum+item.duration,0);persistMotionHistory(saveNow);renderPathState()}
+function resetMotionHistory(){motionHistory=[];motionHistoryMs=0;tripRecording=false;lastMotionRecordAt=0;homeRssi=null;persistMotionHistory(true);renderPathState()}
+function beginTrip(){if(tripRecording)return;motionHistory=[];motionHistoryMs=0;tripRecording=true;lastMotionRecordAt=performance.now();homeRssi=smoothedWifiRssi();persistMotionHistory(true);renderPathState()}
+function updateMotionRecording(now,active){if(!tripRecording)return;const duration=clamp(now-lastMotionRecordAt,0,200);lastMotionRecordAt=now;if(!active||duration<10||Math.max(Math.abs(vx),Math.abs(vy),Math.abs(rot))<.01)return;const previous=motionHistory[motionHistory.length-1],same=previous&&Math.abs(previous.vx-vx)<.015&&Math.abs(previous.vy-vy)<.015&&Math.abs(previous.rot-rot)<.015&&previous.duration<600;if(same)previous.duration+=duration;else motionHistory.push({vx,vy,rot,duration});motionHistoryMs+=duration;if(motionHistoryMs>600000)replaceMotionHistory(motionHistory);else{persistMotionHistory();renderPathState()}}
+function stopNativeSensor(){clearTimeout(calibrationTimer);try{AndroidSensors.stopAccelerometer()}catch(_){}tiltArmed=false;tiltDriving=false;headingTurnEnabled=false;tiltCalibrating=false;tiltSamples=[];headingNeutral=null;headingCarYaw=0;headingLastAt=0;document.getElementById('tilt-stage').classList.remove('calibrating');document.getElementById('tilt-toggle').classList.remove('armed');document.getElementById('tilt-toggle').textContent='启动陀螺仪';const headingButton=document.getElementById('heading-toggle');headingButton.disabled=true;headingButton.textContent='航向转向：关（当前平移）';headingButton.classList.remove('active')}
+function setCalibrationLock(locked){document.querySelectorAll('[data-mode],[data-speed],#square,#rotate-left,#rotate-right').forEach(b=>b.disabled=locked)}
+function stopWheelTest(){const wasRunning=wheelTestUntil>0;clearInterval(wheelTestTicker);wheelTestTicker=0;wheelTestUntil=0;setCalibrationLock(false);document.querySelectorAll('.wheel-run').forEach(b=>{b.disabled=false;b.classList.remove('running')});if(wasRunning)document.getElementById('cal-progress').textContent='测试已停止'}
+function resetKnobs(){Object.values(sticks).forEach(([,knob])=>knob.style.transform='translate(-50%,-50%)')}
+function cancelStickInputs(){Object.keys(stickPointers).forEach(k=>stickPointers[k]=null);vx=vy=0;steeringRaw=0;resetKnobs()}
+function stopWifiReturnState(message){if(!wifiReturnActive)return;wifiReturnActive=false;wifiReturnRun++;const button=document.getElementById('wifi-return');button.classList.remove('running');button.textContent='轨迹 + Wi-Fi 混合返航';if(message)statusBox.textContent=message}
+function clearMotion(sendStop=true){updateMotionRecording(performance.now(),isManualActive()||timedMotionRecord||tiltDriving||shapeActive);stopWifiReturnState('');shapeActive=false;shapeRun++;stopMotorRamp(false);rotationButtonPointer=null;clearTimeout(rotationHoldTimer);rotationHoldTimer=0;clearTimeout(timedMotionTimer);timedMotionTimer=0;timedMotionUntil=0;timedMotionRecord=false;cancelStickInputs();squareActive=false;clearTimeout(squareTimer);stopWheelTest();rot=0;document.querySelectorAll('.active').forEach(e=>e.classList.remove('active'));stopNativeSensor();render();persistMotionHistory(true);if(sendStop)send(STOP)}
+function selectTab(next){const force=arguments.length>1&&arguments[1]===true;if(!['control','ai','return','settings'].includes(next)||(!force&&activeTab===next))return;clearMotion();activeTab=next;try{localStorage.setItem('rokicar-tab',next)}catch(_){}document.querySelectorAll('.tab-view').forEach(view=>view.hidden=view.id!==`tab-${next}`);document.querySelectorAll('[data-tab]').forEach(button=>button.setAttribute('aria-current',button.dataset.tab===next?'page':'false'));window.scrollTo({top:0,behavior:'instant'})}
+document.getElementById('bottom-nav').addEventListener('click',event=>{const button=event.target.closest('[data-tab]');if(button)selectTab(button.dataset.tab)});
+function finishTimedMotion(message){if(!timedMotionUntil)return;updateMotionRecording(performance.now(),timedMotionRecord);timedMotionUntil=0;clearTimeout(timedMotionTimer);timedMotionTimer=0;vx=vy=rot=0;timedMotionRecord=false;render();send(STOP);persistMotionHistory(true);if(message)statusBox.textContent=message}
+function startTimedMotion(command,duration,message,record=true){clearMotion();if(record)beginTrip();vx=command.vx||0;vy=command.vy||0;rot=command.rot||0;timedMotionRecord=record;timedMotionUntil=Date.now()+duration;render();if(!sendDrive()){finishTimedMotion('未连接，无法执行动作');return false}statusBox.textContent=message;timedMotionTimer=setTimeout(()=>finishTimedMotion(`${message}，已停车`),duration);return true}
+function disarmTilt(message,sendStop=true){updateMotionRecording(performance.now(),tiltDriving);stopNativeSensor();vx=vy=rot=0;rotationButtonPointer=null;render();persistMotionHistory(true);if(sendStop)send(STOP);if(message)statusBox.textContent=message}
+
+function applyConfigState(config){if(Array.isArray(config.g)&&config.g.length===3)config.g.forEach((value,index)=>gains[index].value=(Number(value)/1000).toFixed(2));if(Array.isArray(config.p)&&config.p.length===3){wheelMap=config.p.map(Number);wheelMap.forEach((mapping,index)=>{document.getElementById(`map-w${index+1}`).value=String(Math.abs(mapping));document.getElementById(`dir-w${index+1}`).value=String(mapping<0?-1:1)})}if(Array.isArray(config.n)&&config.n.length===3){minDuties=config.n.map(Number);minDuties.forEach((value,index)=>document.getElementById(`min${index+1}`).value=(value/10).toFixed(0))}}
+function connect(force=false){clearTimeout(reconnectTimer);if(force&&ws){const old=ws;ws=null;try{old.close()}catch(_){}}if(!pageVisible||ws&&(ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;if(!isRokiCarNetwork()){setConnection('等待网络','warn');scheduleReconnect();return}setConnection('连接中','warn');let socket;try{socket=new WebSocket(WS_URL);socket.binaryType='arraybuffer';ws=socket}catch(_){scheduleReconnect();return}socket.onopen=()=>{if(ws!==socket){socket.close();return}reconnectDelay=250;setConnection('已连接','ok');statusBox.textContent='实时控制链路已连接';send(QUERY_CONFIG)};socket.onmessage=event=>{if(typeof event.data!=='string')return;try{applyConfigState(JSON.parse(event.data))}catch(_){}};socket.onclose=()=>{if(ws!==socket)return;clearMotion(false);ws=null;setConnection('连接断开','warn');if(pageVisible)scheduleReconnect()};socket.onerror=()=>{if(ws===socket)setConnection('连接错误','warn')}}
+function scheduleReconnect(){clearTimeout(reconnectTimer);reconnectTimer=setTimeout(()=>connect(),reconnectDelay);reconnectDelay=Math.min(2000,reconnectDelay*2)}
+
+function isMoveStick(name){return name==='move'||name==='fullMove'}
+function isRotateStick(name){return name==='rotate'||name==='fullRotate'}
+function updateStick(name,event){const [pad,knob]=sticks[name],rect=pad.getBoundingClientRect();let dx=event.clientX-rect.left-rect.width/2,dy=event.clientY-rect.top-rect.height/2;if(isRotateStick(name)){const limit=rect.width*.32;dy=0;dx=clamp(dx,-limit,limit);knob.style.transform=`translate(calc(-50% + ${dx}px),-50%)`;steeringRaw=dx/limit;refreshDrivingSteering()}else if(isMoveStick(name)){const limit=rect.height*.32;dx=0;dy=clamp(dy,-limit,limit);knob.style.transform=`translate(-50%,calc(-50% + ${dy}px))`;const raw=clamp(-dy/limit,-1,1);vy=RokiControl.applyDeadzone(raw,.07,1.2)*speedLimit();vx=0;refreshDrivingSteering()}else{const limit=rect.width*.33,dist=Math.hypot(dx,dy);if(dist>limit){dx=dx/dist*limit;dy=dy/dist*limit}knob.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;const vector=RokiControl.singleVector(dx/limit,-dy/limit,speedLimit());vx=vector.vx;vy=vector.vy;rot=0}render()}
+function bindStick(name){const [pad,knob]=sticks[name];pad.addEventListener('pointerdown',e=>{if(wheelTestUntil>0||rotationButtonPointer!==null||stickPointers[name]!==null)return;e.preventDefault();stopWifiReturnState('已切换到手动控制');beginTrip();squareActive=false;stickPointers[name]=e.pointerId;pad.setPointerCapture(e.pointerId);updateStick(name,e);sendDrive()});pad.addEventListener('pointermove',e=>{if(stickPointers[name]===e.pointerId){e.preventDefault();updateStick(name,e)}});const finish=e=>{if(stickPointers[name]!==e.pointerId)return;updateMotionRecording(performance.now(),true);stickPointers[name]=null;knob.style.transform='translate(-50%,-50%)';if(isRotateStick(name)){steeringRaw=0;rot=0}else{vx=vy=0;if(stickPointers.rotate!==null||stickPointers.fullRotate!==null)refreshDrivingSteering()}render();persistMotionHistory(true);if(isManualActive())sendDrive();else send(STOP)};pad.addEventListener('pointerup',finish);pad.addEventListener('pointercancel',finish);pad.addEventListener('lostpointercapture',finish)}
+Object.keys(sticks).forEach(bindStick);
+function bindRotation(button,sign){button.addEventListener('pointerdown',e=>{if(wheelTestUntil>0||rotationButtonPointer!==null||mode==='tilt')return;e.preventDefault();stopWifiReturnState('已切换到手动控制');beginTrip();cancelStickInputs();rotationButtonPointer=e.pointerId;squareActive=false;button.setPointerCapture(e.pointerId);button.classList.add('active');rot=sign*RokiControl.rotationCommand(speedName,'kick');render();sendDrive();clearTimeout(rotationHoldTimer);rotationHoldTimer=setTimeout(()=>{if(rotationButtonPointer!==e.pointerId)return;rot=sign*RokiControl.rotationCommand(speedName,'hold');render();sendDrive()},RokiControl.ROTATION_KICK_MS)});const finish=e=>{if(rotationButtonPointer!==e.pointerId)return;updateMotionRecording(performance.now(),true);clearTimeout(rotationHoldTimer);rotationHoldTimer=0;rotationButtonPointer=null;button.classList.remove('active');rot=0;render();persistMotionHistory(true);send(STOP)};button.addEventListener('pointerup',finish);button.addEventListener('pointercancel',finish);button.addEventListener('lostpointercapture',finish)}
+bindRotation(document.getElementById('rotate-left'),-1);bindRotation(document.getElementById('rotate-right'),1);bindRotation(document.getElementById('full-rotate-left'),-1);bindRotation(document.getElementById('full-rotate-right'),1);
+
+function setDualLandscape(enabled){document.body.classList.toggle('dual-landscape',enabled);document.getElementById('dual-fullscreen').hidden=!enabled;document.getElementById('dual-landscape').textContent=enabled?'退出横屏双控制':'进入横屏双控制';try{AndroidDisplay.setDualLandscape(Boolean(enabled))}catch(_){} }
+function selectMode(next){if(wheelTestUntil>0||!['single','dual','tilt'].includes(next))return;clearMotion();if(next!=='dual')setDualLandscape(false);mode=next;saveChoice('rokicar-mode',mode);document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));['single','dual','tilt'].forEach(n=>document.getElementById(`panel-${n}`).hidden=n!==mode);document.getElementById('rotation-buttons').hidden=mode==='tilt'}
+function selectSpeed(next){if(!(next in SPEEDS))return;clearMotion();speedName=next;saveChoice('rokicar-speed',next);document.querySelectorAll('[data-speed]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.speed===next));statusBox.textContent='速度已切换，请重新启用控制'}
+document.getElementById('modes').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)selectMode(b.dataset.mode)});document.getElementById('speeds').addEventListener('click',e=>{const b=e.target.closest('[data-speed]');if(b)selectSpeed(b.dataset.speed)});
+
+function angles(x,y,z){return{roll:Math.atan2(x,Math.hypot(y,z))*180/Math.PI,pitch:Math.atan2(-y,Math.hypot(x,z))*180/Math.PI,norm:Math.hypot(x,y,z)}}
+function mapAngle(a){const m=Math.abs(a);if(m<=3)return 0;return Math.sign(a)*clamp((m-3)/22,0,1)}
+function beginTilt(){if(mode!=='tilt')return;clearMotion(false);tiltCalibrating=true;tiltSamples=[];headingNeutral=null;headingCarYaw=0;headingLastAt=0;sensorAt=0;sensorEvents=0;calibrationStarted=Date.now();document.getElementById('tilt-stage').classList.add('calibrating');document.getElementById('tilt-toggle').classList.add('armed');document.getElementById('tilt-toggle').textContent='正在启动';statusBox.textContent='请保持手机稳定片刻，陀螺仪正在启动';const startWeb=()=>{if(browserSensorBound)return;browserSensorBound=true;window.addEventListener('deviceorientation',e=>{if(e.beta!==null&&e.gamma!==null)onTilt(e.gamma,e.beta,'Web');if(e.alpha!==null)onHeading((360-e.alpha)%360,Date.now())},{passive:true});};let nativeStarted=false;try{if(typeof AndroidSensors!=='undefined'&&AndroidSensors.hasAccelerometer()){headingAvailable=typeof AndroidSensors.hasHeadingSensor!=='function'||AndroidSensors.hasHeadingSensor();AndroidSensors.startAccelerometer();nativeStarted=true}}catch(_){}if(!nativeStarted){try{if(typeof DeviceOrientationEvent==='undefined')throw 0;if(typeof DeviceOrientationEvent.requestPermission==='function')DeviceOrientationEvent.requestPermission().then(v=>{if(v==='granted')startWeb();else disarmTilt('浏览器拒绝姿态权限')});else startWeb()}catch(_){disarmTilt('没有可用的姿态传感器')}}calibrationTimer=setTimeout(finishCalibration,500);setTimeout(()=>{if(sensorEvents===0)document.getElementById('sensor-state').textContent=`尚未收到姿态数据（native=${nativeStarted}）`},1100)}
+function finishCalibration(){if((tiltSamples.length<5||(headingAvailable&&headingCurrent===null))&&Date.now()-calibrationStarted<1100){calibrationTimer=setTimeout(finishCalibration,300);return}if(tiltSamples.length<5){disarmTilt('姿态数据不足，启动失败');return}tiltNeutral={roll:tiltSamples.reduce((s,v)=>s+v.roll,0)/tiltSamples.length,pitch:tiltSamples.reduce((s,v)=>s+v.pitch,0)/tiltSamples.length};headingNeutral=headingCurrent;headingCarYaw=0;headingLastAt=Date.now();tiltCalibrating=false;tiltArmed=true;tiltDriving=true;headingTurnEnabled=false;document.getElementById('tilt-stage').classList.remove('calibrating');document.getElementById('tilt-toggle').textContent='关闭陀螺仪';const headingButton=document.getElementById('heading-toggle');headingButton.disabled=headingNeutral===null;headingButton.textContent=headingNeutral===null?'航向传感器不可用':'航向转向：关（当前平移）';beginTrip();statusBox.textContent=headingNeutral===null?'陀螺仪平移已自动开启；当前手机没有航向数据':'陀螺仪平移已自动开启'}
+function onTilt(roll,pitch,source){sensorAt=Date.now();sensorEvents++;document.getElementById('roll').textContent=`横滚 ${roll.toFixed(1)}°`;document.getElementById('pitch').textContent=`俯仰 ${pitch.toFixed(1)}°`;document.getElementById('sensor-state').textContent=`${source} 已收到 ${sensorEvents} 条 secure=${isSecureContext}`;if(tiltCalibrating){tiltSamples.push({roll,pitch});return}if(!tiltArmed)return;if(headingTurnEnabled){vx=vy=0;render();return}const target=RokiControl.tiltVector(roll,pitch,tiltNeutral.roll,tiltNeutral.pitch,speedLimit());vx+=.25*(target.vx-vx);vy+=.25*(target.vy-vy);if(!tiltDriving)vx=vy=0;rot=0;render()}
+function onHeading(heading,time=Date.now()){headingCurrent=((Number(heading)%360)+360)%360;headingAt=Number(time)||Date.now();document.getElementById('heading').textContent=`航向 ${headingCurrent.toFixed(0)}°`;if(!tiltArmed||headingNeutral===null)return;const now=headingAt,dt=headingLastAt?clamp((now-headingLastAt)/1000,0,.12):0;headingLastAt=now;if(!headingTurnEnabled){rot=0;return}headingCarYaw=RokiControl.shortestAngle(headingCarYaw+rot*140*dt,0);const targetRot=RokiControl.headingFollowCommand(headingCurrent,headingNeutral,headingCarYaw,speedLimit());rot+=.35*(targetRot-rot);vx=vy=0;render()}
+window.onNativeAcceleration=(x,y,z,t)=>{const a=angles(x,y,z);onTilt(a.roll,a.pitch,'Android')};
+window.onNativeHeading=(heading,time)=>onHeading(heading,time);
+window.onNativeHeadingUnavailable=()=>{headingAvailable=false;document.getElementById('heading').textContent='航向 不可用'};
+window.onNativeSensorError=()=>disarmTilt('手机没有可用的加速度计');
+document.getElementById('tilt-toggle').addEventListener('click',()=>tiltArmed||tiltCalibrating?disarmTilt('陀螺仪控制已关闭'):beginTilt());document.getElementById('heading-toggle').addEventListener('click',()=>{if(!tiltArmed||headingCurrent===null)return;headingTurnEnabled=!headingTurnEnabled;tiltDriving=!headingTurnEnabled;vx=vy=rot=0;headingCarYaw=0;headingNeutral=headingCurrent;const button=document.getElementById('heading-toggle');button.textContent=headingTurnEnabled?'航向转向：开（只旋转）':'航向转向：关（当前平移）';button.classList.toggle('active',headingTurnEnabled);send(STOP);if(headingTurnEnabled){statusBox.textContent='航向转向已开启：只响应手机旋转'}else{beginTrip();statusBox.textContent='航向转向已关闭：已自动恢复前后左右平移'}});
+document.getElementById('dual-landscape').addEventListener('click',()=>setDualLandscape(!document.body.classList.contains('dual-landscape')));document.getElementById('full-exit').addEventListener('click',()=>{clearMotion();setDualLandscape(false)});
+
+function wifiReturnAlive(run){return wifiReturnActive&&wifiReturnRun===run}
+function wifiWait(ms,run){return new Promise(resolve=>setTimeout(()=>resolve(wifiReturnAlive(run)),ms))}
+async function wifiSample(run,duration=1100){const values=[],end=Date.now()+duration;while(Date.now()<end&&wifiReturnAlive(run)){const value=readWifiRssi();if(value!==null)values.push(value);if(!await wifiWait(100,run))return null}if(!values.length)return null;values.sort((a,b)=>a-b);return values[Math.floor(values.length/2)]}
+async function wifiMove(run,x,y,duration){if(!wifiReturnAlive(run))return false;vx=x;vy=y;rot=0;render();sendDrive();if(!await wifiWait(duration,run))return false;vx=vy=rot=0;render();send(STOP);return true}
+function finishWifiReturn(message,reached=false){if(!wifiReturnActive)return;wifiReturnActive=false;wifiReturnRun++;vx=vy=rot=0;render();send(STOP);const button=document.getElementById('wifi-return');button.classList.remove('running');button.textContent='轨迹 + Wi-Fi 混合返航';statusBox.textContent=message;if(reached)resetMotionHistory()}
+async function wifiReplayHistory(run,recorded){
+  const replay=RokiControl.invertMotionHistory(recorded,1);if(!replay.length)return{used:false};
+  let lastStatus=0,replayStarted=Date.now();
+  for(let index=0;index<replay.length&&wifiReturnAlive(run);index++){
+    const item=replay[index],sourceIndex=recorded.length-1-index;let remaining=item.duration;
+    vx=item.vx;vy=item.vy;rot=item.rot;render();if(!sendDrive())return{used:true,cancelled:true};
+    while(remaining>0&&wifiReturnAlive(run)){
+      const slice=Math.min(100,remaining);if(!await wifiWait(slice,run))return{used:true,cancelled:true};remaining-=slice;
+      const pending=recorded.slice(0,sourceIndex);if(remaining>1)pending.push({...recorded[sourceIndex],duration:remaining});replaceMotionHistory(pending);
+      const rssi=readWifiRssi();if(homeSignalReached(rssi)){vx=vy=rot=0;send(STOP);return{used:true,reached:true,rssi}}
+      const trend=RokiControl.analyzeRssiTrend(wifiTrendSamples.slice(-5));
+      if(Date.now()-replayStarted>2800&&trend.direction==='worsening'&&trend.delta<=-3){vx=vy=rot=0;send(STOP);return{used:true,needsCorrection:true,rssi,trend}}
+      if(Date.now()-lastStatus>500){statusBox.textContent=`反向轨迹：剩余 ${(motionHistoryMs/1000).toFixed(1)} 秒，RSSI ${rssi??'--'} dBm，趋势 ${trend.label||'采样中'}`;lastStatus=Date.now()}
+    }
+  }
+  replaceMotionHistory([],true);vx=vy=rot=0;render();send(STOP);if(!wifiReturnAlive(run))return{used:true,cancelled:true};
+  const final=await wifiSample(run,800);return{used:true,completed:true,final};
+}
+const WIFI_DIRECTIONS=[{name:'前方',vx:0,vy:1},{name:'右侧',vx:1,vy:0},{name:'后方',vx:0,vy:-1},{name:'左侧',vx:-1,vy:0}];
+function homeSignalReached(rssi){return Number.isFinite(rssi)&&rssi>=wifiReturnTarget}
+function probeDuration(direction,distance){const c=distanceCalibration;if(!c)return distance<=250?2500:3500;const rate=Math.abs(direction.vy)>0?(direction.vy>0?c.forward:c.backward):c.lateral;return clamp(Math.round(distance/(Math.max(.01,rate)*WIFI_PROBE_SPEED)),1400,3800)}
+async function wifiProbeDirections(run,distance){
+  let center=await wifiSample(run,1000);if(center===null)return null;const results=[];
+  for(const direction of WIFI_DIRECTIONS){
+    const legMs=probeDuration(direction,distance);statusBox.textContent=`局部测向：向${direction.name}平移约 ${distance} mm`;
+    if(!await wifiMove(run,direction.vx*WIFI_PROBE_SPEED,direction.vy*WIFI_PROBE_SPEED,legMs)||!await wifiWait(550,run))return null;
+    const destination=await wifiSample(run,1200);if(destination===null)return null;
+    if(homeSignalReached(destination))return{reached:true,rssi:destination,direction};
+    statusBox.textContent=`${direction.name} ${destination} dBm，退回试探中心`;
+    if(!await wifiMove(run,-direction.vx*WIFI_PROBE_SPEED,-direction.vy*WIFI_PROBE_SPEED,legMs)||!await wifiWait(500,run))return null;
+    const back=await wifiSample(run,700);if(back===null)return null;
+    const localCenter=(center+back)/2;results.push({...direction,rssi:destination-localCenter,measured:destination,center:localCenter});center=back;
+  }
+  const best=RokiControl.chooseWifiDirection(0,results,2);
+  statusBox.textContent=`试探结果：${results.map(item=>`${item.name} ${item.measured}dBm (${item.rssi>=0?'+':''}${item.rssi.toFixed(1)})`).join('，')}`;
+  return{reached:false,best,center,results};
+}
+async function startWifiReturn(skipConfirm=false){
+  if(wifiReturnActive){finishWifiReturn('自动返回已手动停止');return}
+  const initial=readWifiRssi();
+  if(initial===null){statusBox.textContent='无法读取 Wi-Fi 信号，请确认手机连接 RokiCar';return}
+  wifiReturnTarget=readRssiTarget();
+  if(homeSignalReached(initial)){vx=vy=rot=0;send(STOP);resetMotionHistory();statusBox.textContent=`当前 ${initial} dBm，已达到返航目标 ${wifiReturnTarget} dBm`;return}
+  if(!skipConfirm&&!confirm(`将按反向轨迹返回，并实时用 RSSI 纠偏；达到 ${wifiReturnTarget} dBm 立即停车。请保持手机位置不动并清空周围障碍。`))return;
+  const recorded=motionHistory.slice();tripRecording=false;lastMotionRecordAt=0;
+  clearMotion();wifiReturnActive=true;const run=++wifiReturnRun,button=document.getElementById('wifi-return');button.classList.add('running');button.textContent='停止自动返回';
+  if(recorded.length){
+    const recordedMs=recorded.reduce((sum,item)=>sum+item.duration,0);statusBox.textContent=`开始倒放 ${(recordedMs/1000).toFixed(1)} 秒轨迹；达到目标立即停车`;
+    const replay=await wifiReplayHistory(run,recorded);if(!wifiReturnAlive(run))return;
+    if(replay.reached||homeSignalReached(replay.final)){finishWifiReturn(`返航完成：${replay.rssi??replay.final} dBm，达到目标 ${wifiReturnTarget} dBm`,true);return}
+    statusBox.textContent=replay.needsCorrection?'RSSI 连续恶化，暂停轨迹并局部测向':'轨迹耗尽但未达到目标，进入 Wi-Fi 寻强';
+    if(!await wifiWait(700,run))return;
+  }
+  const started=Date.now();let cycle=0;
+  while(wifiReturnAlive(run)&&Date.now()-started<WIFI_RETURN_MAX_MS&&cycle<4){
+    cycle++;let probe=null;
+    for(const distance of WIFI_PROBE_DISTANCES){
+      probe=await wifiProbeDirections(run,distance);if(!wifiReturnAlive(run))return;
+      if(probe&&probe.reached){finishWifiReturn(`Wi-Fi 返航完成：${probe.rssi} dBm`,true);return}
+      if(probe&&probe.best)break;
+      statusBox.textContent=`第 ${cycle} 轮信号差异不足 1.5 dB，扩大试探距离`;
+    }
+    if(!probe||!probe.best){finishWifiReturn('扩大试探距离后仍无法可靠分辨 Wi-Fi 方向，已停车');return}
+    const direction=probe.best;
+    let reference=await wifiSample(run);if(reference===null){finishWifiReturn('信号读取失败，已停车');return}
+    let needReprobe=false;
+    for(let step=1;step<=6&&wifiReturnAlive(run);step++){
+      statusBox.textContent=`第 ${cycle} 轮：${direction.name}信号更强，沿该方向移动 ${step}/6，当前 ${reference} dBm`;
+      if(!await wifiMove(run,direction.vx*WIFI_RETURN_SPEED,direction.vy*WIFI_RETURN_SPEED,WIFI_RETURN_STEP_MS))return;
+      if(!await wifiWait(550,run))return;const current=await wifiSample(run,1200);
+      if(current===null){finishWifiReturn('返回时信号丢失，已停车');return}
+      if(homeSignalReached(current)){finishWifiReturn(`返回完成：${current} dBm，接近出发点基线 ${homeRssi??'--'} dBm`,true);return}
+      const decision=RokiControl.evaluateWifiStep(reference,current,1,2);
+      if(decision==='continue'){reference=current;if(motionHistory.length){statusBox.textContent='纠偏有效，继续剩余反向轨迹';const replay=await wifiReplayHistory(run,motionHistory.slice());if(!wifiReturnAlive(run))return;if(replay.reached||homeSignalReached(replay.final)){finishWifiReturn(`返航完成：${replay.rssi??replay.final} dBm`,true);return}if(replay.needsCorrection){needReprobe=true;break}}continue}
+      if(decision==='rollback'){
+        statusBox.textContent=`信号从 ${reference} 降至 ${current} dBm，撤回这一步并重新测向`;
+        if(!await wifiMove(run,-direction.vx*WIFI_RETURN_SPEED,-direction.vy*WIFI_RETURN_SPEED,WIFI_RETURN_STEP_MS))return;
+        if(!await wifiWait(550,run))return;
+      }
+      statusBox.textContent=decision==='reprobe'?`移动后 ${current} dBm，变化不足，重新测向`:'信号读取异常，已停车';needReprobe=true;break;
+    }
+    if(!needReprobe&&wifiReturnAlive(run))statusBox.textContent='本轮返回完成，重新测量局部梯度';
+  }
+  if(wifiReturnAlive(run))finishWifiReturn('自动返回达到四轮测向或 90 秒上限，已安全停车');
+}
+
+document.querySelectorAll('[data-stop],#stop').forEach(b=>b.addEventListener('click',()=>{clearMotion();statusBox.textContent='已停车'}));document.getElementById('reconnect').addEventListener('click',()=>{clearMotion();connect(true)});
+document.getElementById('wifi-return').addEventListener('click',()=>startWifiReturn(false));
+const rssiTargetInput=document.getElementById('rssi-target-input');rssiTargetInput.value=String(wifiReturnTarget);rssiTargetInput.addEventListener('change',()=>{wifiReturnTarget=clamp(Math.round(Number(rssiTargetInput.value)||WIFI_TARGET),-90,-20);rssiTargetInput.value=String(wifiReturnTarget);localStorage.setItem('omni-rssi-target',String(wifiReturnTarget));renderRssiDiagnostics();statusBox.textContent=`返航终点已设为 ${wifiReturnTarget} dBm`});
+document.getElementById('clear-path').addEventListener('click',()=>{clearMotion();resetMotionHistory();statusBox.textContent='返航轨迹和出发点信号已清除'});
+function startWheelTest(button){clearMotion();const port=Number(button.dataset.port);if(!send(WHEEL_TEST,port,300,5000)){statusBox.textContent='未连接，无法开始轮速测试';return}wheelTestUntil=Date.now()+5000;setCalibrationLock(true);document.querySelectorAll('.wheel-run').forEach(b=>b.disabled=true);button.classList.add('running');const progress=document.getElementById('cal-progress'),name=button.textContent.replace(/\s+/g,' ');const update=()=>{const remain=Math.max(0,wheelTestUntil-Date.now());progress.textContent=`${name}：剩余 ${(remain/1000).toFixed(1)} 秒`;if(remain<=0){stopWheelTest();progress.textContent=`${name}：测试完成，请填写圈数`;statusBox.textContent='单轮测试完成，核心板已自动停车'}};update();wheelTestTicker=setInterval(update,100)}
+document.querySelectorAll('.wheel-run').forEach(button=>button.addEventListener('click',()=>startWheelTest(button)));
+function calculateGains(){const turns=[1,2,3].map(i=>Number(document.getElementById(`turn${i}`).value)),result=RokiControl.calculateGains(turns),box=document.getElementById('gain-result'),save=document.getElementById('save');gainCalculationValid=false;save.disabled=true;if(result.reason==='invalid'){box.textContent='请输入三只轮都大于 0 的圈数';return null}if(result.reason==='range'){box.textContent=`差异过大：最慢轮 ${result.target.toFixed(1)} 圈，至少一轮需要低于 0.70。请先检查驱动电压、电机、轮子阻力和接线，暂不允许保存。`;return null}result.values.forEach((v,i)=>gains[i].value=v.toFixed(2));gainCalculationValid=true;save.disabled=false;box.textContent=`计算依据：以最慢的 ${result.target.toFixed(1)} 圈为基准。建议 M1 ${result.values[0].toFixed(2)}　M2 ${result.values[1].toFixed(2)}　W3 ${result.values[2].toFixed(2)}。只会降低较快轮。`;return result.values}
+document.getElementById('calculate').addEventListener('click',calculateGains);
+document.querySelectorAll('.turn-inputs input').forEach(input=>input.addEventListener('input',()=>{gainCalculationValid=false;document.getElementById('save').disabled=true}));
+function applyGains(){if(!gainCalculationValid){statusBox.textContent='请先填写圈数并成功计算建议增益';return}clearMotion();const values=gains.map(g=>clamp(Number(g.value)||1,.7,1.3));send(GAINS,...values.map(v=>Math.round(v*1000)));setTimeout(()=>send(SAVE),80);statusBox.textContent=`轮速增益已应用并保存：${values.map(v=>v.toFixed(2)).join(' / ')}`}
+document.getElementById('save').addEventListener('click',applyGains);
+
+function renderDistanceState(){const box=document.getElementById('distance-state'),ready=distanceCalibration.forward>0&&distanceCalibration.backward>0&&distanceCalibration.lateral>0;box.textContent=ready?`标定速度：前进 ${Math.round(distanceCalibration.forward)} / 后退 ${Math.round(distanceCalibration.backward)} / 横移 ${Math.round(distanceCalibration.lateral)} mm/s`:'尚未完整标定，当前只记录控制时间'}
+document.querySelectorAll('.distance-run').forEach(button=>button.addEventListener('click',()=>startTimedMotion({vx:Number(button.dataset.vx),vy:Number(button.dataset.vy),rot:0},3000,button.textContent,false)));
+document.getElementById('distance-save').addEventListener('click',()=>{const forward=Number(document.getElementById('distance-forward').value),backward=Number(document.getElementById('distance-backward').value),lateral=Number(document.getElementById('distance-lateral').value);if([forward,backward,lateral].some(v=>!Number.isFinite(v)||v<=0)){statusBox.textContent='请填写三次 3 秒测试的实际毫米数';return}distanceCalibration={forward:forward/(3*SPEEDS.standard),backward:backward/(3*SPEEDS.standard),lateral:lateral/(3*SPEEDS.standard*RokiControl.SINGLE_X_SCALE)};localStorage.setItem('omni-distance-calibration',JSON.stringify(distanceCalibration));renderDistanceState();renderPathState();statusBox.textContent='返航距离标定已保存'});
+
+function stopMotorRamp(sendStop=true){clearInterval(activeRampTimer);activeRampTimer=0;activeRampPort=0;document.getElementById('deadzone-confirm').disabled=true;document.querySelectorAll('.deadzone-run').forEach(b=>b.disabled=false);if(sendStop)send(STOP)}
+document.querySelectorAll('.identify-run').forEach(button=>button.addEventListener('click',()=>{clearMotion();const port=Number(button.dataset.port);if(!send(MOTOR_TEST,port,300,2000)){document.getElementById('wizard-state').textContent='小车固件未连接或版本过旧';return}document.getElementById('wizard-state').textContent=`端口 ${port} 正以 30% PWM 运行 2 秒，请观察轮位和方向`}));
+document.querySelectorAll('.deadzone-run').forEach(button=>button.addEventListener('click',()=>{clearMotion();stopMotorRamp(false);activeRampPort=Number(button.dataset.port);activeRampDuty=80;document.querySelectorAll('.deadzone-run').forEach(b=>b.disabled=true);document.getElementById('deadzone-confirm').disabled=false;const tick=()=>{if(!activeRampPort)return;send(MOTOR_TEST,activeRampPort,activeRampDuty,1100);document.getElementById('wizard-state').textContent=`端口 ${activeRampPort}：当前 ${(activeRampDuty/10).toFixed(0)}% PWM；连续稳定转动后立即点“已稳定”`;activeRampDuty=Math.min(350,activeRampDuty+20);if(activeRampDuty>=350)clearInterval(activeRampTimer)};tick();activeRampTimer=setInterval(tick,1200)}));
+document.getElementById('deadzone-confirm').addEventListener('click',()=>{if(!activeRampPort)return;const port=activeRampPort,value=Math.min(35,Math.round((activeRampDuty-20)/10)+2);document.getElementById(`min${port}`).value=value;stopMotorRamp();document.getElementById('wizard-state').textContent=`端口 ${port} 起转值保存为 ${value}%（含 2% 余量）`});
+function readWizardConfig(){const map=[1,2,3].map(i=>Number(document.getElementById(`map-w${i}`).value)*Number(document.getElementById(`dir-w${i}`).value)),ports=map.map(Math.abs),mins=[1,2,3].map(i=>clamp(Number(document.getElementById(`min${i}`).value)||0,0,35));if(new Set(ports).size!==3)throw new Error('W1、W2、W3 必须分别对应三个不同物理端口');return{map,mins}}
+function applyWizardConfig(save=false){const config=readWizardConfig();wheelMap=config.map;minDuties=config.mins.map(v=>v*10);send(WHEEL_MAP,...wheelMap);setTimeout(()=>send(MOTOR_MODEL,...minDuties),80);if(save)setTimeout(()=>send(SAVE),180);return config}
+document.querySelectorAll('.preview-motion').forEach(button=>button.addEventListener('click',()=>{try{applyWizardConfig(false);setTimeout(()=>startTimedMotion({vx:Number(button.dataset.vx),vy:Number(button.dataset.vy),rot:Number(button.dataset.rot)},1000,'标定预览运行 1 秒',false),140)}catch(error){statusBox.textContent=error.message}}));
+document.getElementById('wizard-save').addEventListener('click',()=>{try{const config=applyWizardConfig(true);document.getElementById('wizard-state').textContent=`已保存：轮位 ${config.map.join('/')}，起转 ${config.mins.join('/')}%`;statusBox.textContent='完整电机标定已写入核心板'}catch(error){statusBox.textContent=error.message}});
+
+function closeShapePreview(){document.getElementById('shape-modal').hidden=true;pendingShape=null}
+function drawShapePreview(path){const canvas=document.getElementById('shape-canvas'),ctx=canvas.getContext('2d'),points=path.points||[];ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#22a447';ctx.lineWidth=8;ctx.lineJoin='round';if(!points.length)return;const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]),span=Math.max(1,Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys)),scale=Math.min(canvas.width,canvas.height)*.72/span,cx=canvas.width/2,cy=canvas.height/2,ox=(Math.max(...xs)+Math.min(...xs))/2,oy=(Math.max(...ys)+Math.min(...ys))/2;ctx.beginPath();points.forEach((p,i)=>{const x=cx+(p[0]-ox)*scale,y=cy-(p[1]-oy)*scale;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}
+function showShapePreview(source){const shape=source.shape||'square',size=source.size||'medium',speed=source.speed||'standard',path=RokiControl.buildShapePath(shape,size,speed,distanceCalibration);pendingShape=path;document.getElementById('shape-title').textContent=`${{heart:'心形',triangle:'三角形',square:'方形',star:'五角星'}[shape]||shape}路径预览`;document.getElementById('shape-summary').textContent=path.ok?`尺寸约 ${path.sizeMm} mm，预计 ${(path.durationMs/1000).toFixed(1)} 秒，全程 ROT=0`:`需要先完成前进、后退、横移距离标定`;document.getElementById('shape-confirm').disabled=!path.ok;drawShapePreview(path);document.getElementById('shape-modal').hidden=false}
+async function runShapePath(path){clearMotion();beginTrip();shapeActive=true;const run=++shapeRun;for(const segment of path.segments){if(!shapeActive||run!==shapeRun)return;vx=segment.vx;vy=segment.vy;rot=0;render();const end=Date.now()+segment.duration;while(Date.now()<end&&shapeActive&&run===shapeRun)await new Promise(resolve=>setTimeout(resolve,50));}if(shapeActive&&run===shapeRun){shapeActive=false;vx=vy=rot=0;render();send(STOP);persistMotionHistory(true);statusBox.textContent='图形路径完成并已停车'}}
+document.getElementById('shape-cancel').addEventListener('click',closeShapePreview);document.getElementById('shape-confirm').addEventListener('click',()=>{if(!pendingShape||!pendingShape.ok)return;const path=pendingShape;closeShapePreview();runShapePath(path)});
+
+function renderConversation(partial=''){const box=document.getElementById('voice-conversation');box.replaceChildren();if(!conversationHistory.length&&!partial){const empty=document.createElement('div');empty.className='conversation-empty';empty.textContent='还没有语音或文字指令';box.appendChild(empty);return}conversationHistory.forEach(item=>{const message=document.createElement('div');message.className=`message ${item.role}`;message.textContent=`${item.role==='user'?'你':'小麦'}：${item.text}`;box.appendChild(message)});if(partial){partialConversationNode=document.createElement('div');partialConversationNode.className='message user partial';partialConversationNode.textContent=`识别中：${partial}`;box.appendChild(partialConversationNode)}else partialConversationNode=null;box.scrollTop=box.scrollHeight}
+function appendConversation(role,text){const value=String(text||'').trim();if(!value)return;conversationHistory.push({role,text:value.slice(0,300)});conversationHistory=conversationHistory.slice(-30);try{localStorage.setItem(CONVERSATION_KEY,JSON.stringify(conversationHistory))}catch(_){}renderConversation()}
+function refreshVoiceConfiguration(){try{const state=JSON.parse(AndroidVoice.getConfigurationState());voiceEnabled=Boolean(state.enabled);document.getElementById('voice-toggle').textContent=voiceEnabled?'关闭“小麦小麦”监听':'开启“小麦小麦”监听';document.getElementById('voice-config-state').textContent=`本地唤醒：${state.wakeWord||'小麦小麦'}　语音：${state.aliyunKey?'已配置':'未配置'}　AI：${state.deepSeekKey?'已配置':'本地基础指令'}`}catch(_){document.getElementById('voice-config-state').textContent='当前不是 Android App，语音原生模块不可用'}}
+function setVoiceState(state,detail){const box=document.getElementById('voice-state'),face=document.getElementById('xiaomai-face');box.textContent=detail;box.className=`voice-state ${state==='error'?'error':state==='wake'||state==='asr'||state==='woken'?'listening':'ready'}`;face.className=`xiaomai-face ${state==='error'?'error':state==='thinking'?'thinking':state==='reply'?'speaking':state==='wake'||state==='asr'||state==='woken'?'listening':'idle'}`;if(state==='off')voiceEnabled=false;else if(['wake','asr','woken','thinking','reply'].includes(state))voiceEnabled=true;document.getElementById('voice-toggle').textContent=voiceEnabled?'关闭“小麦小麦”监听':'开启“小麦小麦”监听'}
+document.getElementById('voice-toggle').addEventListener('click',()=>{try{AndroidVoice.setEnabled(!voiceEnabled);voiceEnabled=!voiceEnabled;setTimeout(refreshVoiceConfiguration,120)}catch(_){setVoiceState('error','请在 Android App 中使用语音控制')}});
+document.getElementById('voice-wake-test').addEventListener('click',()=>{try{AndroidVoice.simulateWake()}catch(_){setVoiceState('error','当前没有原生语音模块')}});
+document.getElementById('voice-save').addEventListener('click',()=>{try{AndroidVoice.saveConfiguration(document.getElementById('aliyun-key').value,document.getElementById('deepseek-key').value);document.querySelectorAll('#aliyun-key,#deepseek-key').forEach(input=>input.value='');setTimeout(refreshVoiceConfiguration,120)}catch(_){setVoiceState('error','配置保存失败')}});
+document.getElementById('voice-send').addEventListener('click',()=>{const input=document.getElementById('voice-text'),text=input.value.trim();if(!text)return;try{AndroidVoice.submitText(text);input.value=''}catch(_){setVoiceState('error','请在 Android App 中测试 AI 指令')}});
+document.getElementById('voice-text').addEventListener('keydown',event=>{if(event.key==='Enter')document.getElementById('voice-send').click()});
+document.getElementById('voice-clear').addEventListener('click',()=>{conversationHistory=[];try{localStorage.removeItem(CONVERSATION_KEY)}catch(_){}renderConversation()});
+window.onNativeVoiceState=(state,detail)=>setVoiceState(state,detail);
+window.onNativeVoiceTranscript=(text,complete)=>{const live=document.getElementById('live-transcript'),value=String(text||'').trim();live.textContent=`${complete?'你说':'正在识别'}：${value||'...'}`;if(complete)appendConversation('user',value);else renderConversation(value)};
+window.onNativeVoicePlan=raw=>{let source;try{source=typeof raw==='string'?JSON.parse(raw):raw}catch(_){setVoiceState('error','AI 动作格式错误');clearMotion();return}const plan=RokiControl.normalizeVoicePlan(source);if(!plan.ok){setVoiceState('error','AI 动作未通过安全校验');clearMotion();return}if(!source.silent)appendConversation('assistant',plan.reply||'收到');if(plan.action==='stop'){clearMotion();statusBox.textContent='小麦已停车';return}if(plan.action==='return_home'){startWifiReturn(true);return}if(plan.action==='draw_shape'){showShapePreview(plan);return}if(plan.action==='chat'){statusBox.textContent=plan.reply||'小麦正在对话';return}if(plan.action==='go_out'){startTimedMotion({vx:0,vy:SPEEDS.standard,rot:0},3000,plan.reply||'小麦向前出发');return}startTimedMotion(plan,plan.duration,plan.reply||'小麦正在执行动作')};
+
+setInterval(()=>{const now=Date.now();if(tiltArmed&&(!sensorAt||now-sensorAt>500)){disarmTilt('传感器数据超时，已停车');return}if(tiltArmed&&headingTurnEnabled&&headingNeutral!==null&&now-headingAt>500)rot=0;if(wifiReturnActive){updateMotionRecording(performance.now(),false);sendDrive()}else if(shapeActive){const sent=sendDrive();updateMotionRecording(performance.now(),sent)}else if(timedMotionUntil>now){const sent=sendDrive();updateMotionRecording(performance.now(),sent&&timedMotionRecord)}else if(timedMotionUntil){finishTimedMotion('定时动作完成，已停车')}else if((tiltArmed&&(tiltDriving||headingTurnEnabled))||isManualActive()){const sent=sendDrive();updateMotionRecording(performance.now(),sent)}else{updateMotionRecording(performance.now(),false);if(squareActive)send(PING);else if(now-lastIdlePing>=1000){send(PING);lastIdlePing=now}}},100);
+setInterval(renderWifiSignal,250);
+window.onNativePause=()=>{pageVisible=false;clearMotion();clearTimeout(reconnectTimer);const old=ws;ws=null;if(old)try{old.close()}catch(_){}setConnection('已暂停','warn')};window.onNativeResume=()=>{pageVisible=true;connect()};window.onNativeDestroy=window.onNativePause;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)window.onNativePause()});
+selectMode(mode);selectSpeed(speedName);selectTab(initialTab,true);render();renderWifiSignal();renderPathState();renderDistanceState();renderConversation();refreshVoiceConfiguration();connect();
+</script>
+<script src="lights.js"></script>
+</body>
+</html>

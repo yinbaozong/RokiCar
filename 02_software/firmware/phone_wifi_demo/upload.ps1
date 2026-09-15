@@ -20,4 +20,4 @@ mpremote connect $Port fs cp $Main :main.py
 Write-Host "Resetting board..."
 mpremote connect $Port reset
 
-Write-Host "Done. Phone WiFi: OmniCar-Demo / 12345678 / http://192.168.4.1/"
+Write-Host "Done. Phone WiFi: RokiCar-Demo / 12345678 / http://192.168.4.1/"

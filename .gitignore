@@ -4,6 +4,7 @@ __pycache__/
 .idea/
 .kotlin/
 node_modules/
+**/build/
 local.properties
 .env
 .env.*

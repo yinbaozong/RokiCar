@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>RokiCar 运动仿真</title>
+  <style>
+    :root{--ink:#172019;--muted:#68716b;--line:#cad2cd;--paper:#f3f5f2;--panel:#fff;--soft:#e8eeea;--green:#128451;--green-dark:#07643a;--red:#9d342d;--red-soft:#fff0ed}
+    *{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif;letter-spacing:0}button,input{font:inherit}button{color:inherit;-webkit-tap-highlight-color:transparent}button:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+    .app{height:100vh;overflow:hidden;display:grid;grid-template-rows:auto 1fr}.topbar{height:58px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:rgba(255,255,255,.88)}.brand{display:flex;align-items:baseline;gap:10px}.brand strong{font-size:20px}.brand span,.status{font-size:12px;color:var(--muted)}.status{padding:6px 9px;border:1px solid var(--line);border-radius:999px;background:#fff}.status.running{color:var(--green-dark);border-color:#72ad8d}
+    .workspace{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 390px}.stage{position:relative;min-height:0;overflow:hidden;background:#e9ede9}.stage canvas{display:block;width:100%;height:100%;touch-action:none}.stage-tools{position:absolute;left:14px;top:14px;display:flex;gap:7px}.stage-tools button,.test-actions button{min-height:38px;padding:7px 11px;border:1px solid #aeb8b1;border-radius:6px;background:rgba(255,255,255,.92)}.stage-readout{position:absolute;left:14px;bottom:14px;padding:9px 11px;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:6px;font:12px/1.55 Consolas,monospace;pointer-events:none}.north{position:absolute;right:16px;top:15px;color:var(--muted);font-size:12px;text-align:center}.north b{display:block;color:var(--ink);font-size:22px}
+    .controls{min-width:0;padding:15px 16px 26px;overflow-y:auto;background:var(--panel);border-left:1px solid var(--line)}.section{padding:14px 0;border-bottom:1px solid var(--line)}.section:first-child{padding-top:0}.section:last-child{border-bottom:0}.section h2{margin:0 0 10px;font-size:14px}.section p{margin:5px 0;color:var(--muted);font-size:12px;line-height:1.55}
+    .segments{display:grid;gap:3px;padding:3px;background:var(--soft);border-radius:7px}.segments.modes,.segments.speed{grid-template-columns:repeat(3,minmax(0,1fr))}.segments button{min-width:0;min-height:36px;padding:4px;border:0;border-radius:5px;background:transparent;font-size:13px}.segments button[aria-pressed="true"]{color:var(--green-dark);background:#fff;box-shadow:0 1px 4px rgba(20,45,28,.13)}
+    .control-area{min-height:226px;padding-top:13px;display:grid;place-items:center}.stick{position:relative;width:202px;aspect-ratio:1;border:2px solid #b5c0b8;border-radius:50%;background:var(--soft);touch-action:none;user-select:none;overflow:hidden}.stick:before,.stick:after,.axis:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#c1cbc4}.stick:before{width:2px;height:78%}.stick:after{height:2px;width:78%}.knob{position:absolute;left:50%;top:50%;width:58px;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:2px solid var(--green-dark);background:var(--green);box-shadow:0 4px 13px rgba(0,0,0,.18);pointer-events:none;transition:transform 90ms ease}.dragging .knob{transition:none}
+    .rotate-buttons{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.rotate-buttons button{min-height:43px;border:1px solid #aeb8b1;border-radius:6px;background:#fff;touch-action:none}.rotate-buttons button.active{color:var(--green-dark);border-color:#65a780;background:#e9f5ee}
+    .dual{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}.axis-wrap{display:grid;gap:7px;text-align:center;color:var(--muted);font-size:12px}.axis{position:relative;height:154px;border:2px solid #b5c0b8;border-radius:8px;background:var(--soft);touch-action:none;user-select:none;overflow:hidden}.axis:before{width:76%;height:2px}.axis.throttle:before{width:2px;height:76%}.axis .knob{width:50px}.axis.throttle .knob{transform:translate(-50%,-50%)}
+    .tilt{width:100%;display:grid;gap:13px}.tilt label,.range-row{display:grid;grid-template-columns:74px 1fr 46px;align-items:center;gap:8px;font-size:12px;color:var(--muted)}input[type="range"]{width:100%;accent-color:var(--green)}output{font:12px Consolas,monospace;color:var(--ink);text-align:right}
+    .stop{width:100%;min-height:48px;border:1px solid #d59c95;border-radius:6px;color:var(--red);background:var(--red-soft);font-weight:700}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.metric{padding:7px 3px;border:1px solid #d7ddd9;border-radius:5px;background:#fafbfa;text-align:center;font:11px Consolas,monospace;overflow:hidden}
+    .wheel-row{display:grid;grid-template-columns:28px 1fr 48px;gap:8px;align-items:center;margin:8px 0;font:12px Consolas,monospace}.wheel-track{height:8px;background:var(--soft);border-radius:2px;overflow:hidden}.wheel-bar{height:100%;width:0;transform-origin:left center;background:var(--green);transition:width 80ms linear}.wheel-bar.negative{margin-left:auto;background:#4b6255}.test-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.test-actions button.primary{color:#fff;border-color:var(--green);background:var(--green)}
+    details{margin-top:9px;border-top:1px solid var(--line)}summary{min-height:42px;display:flex;align-items:center;cursor:pointer;font-size:13px;font-weight:700}.cal-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.cal-grid label{display:grid;gap:4px;color:var(--muted);font-size:11px}.cal-grid input{width:100%;min-height:38px;border:1px solid #aeb8b1;border-radius:5px;padding:5px}.cal-result{margin-top:8px;padding:9px;background:var(--soft);border-radius:5px;font:12px/1.55 Consolas,monospace}.note{padding-left:9px;border-left:3px solid var(--green)}
+    @media(max-width:850px){.app{height:auto;min-height:100vh;overflow:visible}.topbar{height:54px;padding:0 12px}.brand span{display:none}.workspace{display:block}.stage{height:52vh;min-height:390px}.controls{border-left:0;border-top:1px solid var(--line);overflow:visible}.stage-readout{font-size:11px}.control-area{min-height:218px}}
+    @media(max-width:390px){.controls{padding-left:12px;padding-right:12px}.dual{gap:7px}.axis{height:140px}.stick{width:194px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar"><div class="brand"><strong>RokiCar Lab</strong><span>三轮全向底盘运动仿真</span></div><span id="status" class="status">已停车</span></header>
+  <main class="workspace">
+    <section class="stage" aria-label="小车运动仿真画布">
+      <canvas id="world"></canvas>
+      <div class="stage-tools"><button id="reset-pose">复位位置</button><button id="clear-path">清除轨迹</button></div>
+      <div class="north"><b>↑</b>世界前方</div>
+      <div id="pose" class="stage-readout">X 0.00 m　Y 0.00 m<br>车头 0.0°　误差 0.00 m</div>
+    </section>
+    <aside class="controls">
+      <section class="section">
+        <div id="modes" class="segments modes" aria-label="控制模式">
+          <button data-mode="single" aria-pressed="true">单摇杆</button><button data-mode="dual" aria-pressed="false">双控制</button><button data-mode="tilt" aria-pressed="false">倾斜模拟</button>
+        </div>
+        <div id="panel-single" class="control-area"><div id="single" class="stick"><div class="knob"></div></div></div>
+        <div id="panel-dual" class="control-area" hidden>
+          <div class="dual"><div class="axis-wrap"><div id="throttle" class="axis throttle"><div class="knob"></div></div><span>前进 / 倒退</span></div><div class="axis-wrap"><div id="steering" class="axis"><div class="knob"></div></div><span>渐进式转向</span></div></div>
+        </div>
+        <div id="panel-tilt" class="control-area" hidden>
+          <div class="tilt"><label>前后倾<input id="pitch" type="range" min="-25" max="25" value="0"><output>0°</output></label><label>左右倾<input id="roll" type="range" min="-25" max="25" value="0"><output>0°</output></label><p>这里模拟 App 的手机姿态。前倾为前进，斜向倾斜为斜向平移，旋转始终为零。</p></div>
+        </div>
+        <div id="rotation-buttons" class="rotate-buttons"><button data-rotate="-1">↺ 原地左转</button><button data-rotate="1">↻ 原地右转</button></div>
+        <button id="stop" class="stop">■ 停止</button>
+        <div class="metrics"><div id="vx" class="metric">VX 0.00</div><div id="vy" class="metric">VY 0.00</div><div id="rot" class="metric">ROT 0.00</div></div>
+      </section>
+
+      <section class="section">
+        <h2>转向手感</h2>
+        <label class="range-row">最大转向<input id="steer-limit" type="range" min="10" max="45" value="27"><output>27%</output></label>
+        <label class="range-row">渐进曲线<input id="steer-expo" type="range" min="1" max="3" step="0.1" value="2.2"><output>2.2</output></label>
+        <div class="segments speed" id="speeds"><button data-speed="0.35" aria-pressed="false">慢速</button><button data-speed="0.55" aria-pressed="true">标准</button><button data-speed="0.75" aria-pressed="false">快速</button></div>
+        <p class="note">默认打满转向为 27% 旋转量；靠近中点时仍然柔和。原地旋转按钮使用独立的起步助推，不与这里共用上限。</p>
+      </section>
+
+      <section class="section">
+        <h2>三轮实时输出</h2>
+        <div class="wheel-row"><span>W1</span><div class="wheel-track"><div id="w1" class="wheel-bar"></div></div><output id="w1v">0.00</output></div>
+        <div class="wheel-row"><span>W2</span><div class="wheel-track"><div id="w2" class="wheel-bar"></div></div><output id="w2v">0.00</output></div>
+        <div class="wheel-row"><span>W3</span><div class="wheel-track"><div id="w3" class="wheel-bar"></div></div><output id="w3v">0.00</output></div>
+        <details><summary>模拟电机速度不一致</summary>
+          <label class="range-row">M1 强度<input class="motor" data-motor="0" type="range" min="70" max="130" value="100"><output>100%</output></label>
+          <label class="range-row">M2 强度<input class="motor" data-motor="1" type="range" min="70" max="130" value="100"><output>100%</output></label>
+          <label class="range-row">W3 强度<input class="motor" data-motor="2" type="range" min="70" max="130" value="100"><output>100%</output></label>
+          <p>把任意一轮改成 85%，再点原地旋转，就能看到“原地旋转却跑掉”的原因。</p>
+        </details>
+      </section>
+
+      <section class="section">
+        <h2>路径验证</h2>
+        <div class="test-actions"><button id="square" class="primary">运行理想方形</button><button id="pure-rotate">原地旋转 3 秒</button></div>
+        <p id="test-result">方形顺序：前进 → 右移 → 后退 → 左移，四段 ROT 都为 0。</p>
+      </section>
+
+      <section class="section">
+        <h2>真车轮速校准方案</h2>
+        <p>最终 App 会让三只轮分别以相同 PWM 运行 5 秒。你只需用慢动作视频数每只轮转了几圈，再填到这里。</p>
+        <div class="cal-grid"><label>M1 圈数<input id="turn1" type="number" min="1" step="0.1" value="10"></label><label>M2 圈数<input id="turn2" type="number" min="1" step="0.1" value="10"></label><label>W3 圈数<input id="turn3" type="number" min="1" step="0.1" value="10"></label></div>
+        <div id="cal-result" class="cal-result">建议增益：M1 1.00　M2 1.00　W3 1.00</div>
+        <p>计算方式是“最慢轮圈数 ÷ 当前轮圈数”。快的轮子降下来，三只轮对齐；不再要求你判断抽象的正负号。</p>
+      </section>
+    </aside>
+  </main>
+</div>
+<script src="../mobile/rokicar-android/app/src/main/assets/control-core.js"></script>
+<script>
+(() => {
+  const canvas=document.getElementById('world'),ctx=canvas.getContext('2d'),status=document.getElementById('status');
+  const poseBox=document.getElementById('pose'),testResult=document.getElementById('test-result');
+  const state={x:0,y:0,heading:0,vx:0,vy:0,rot:0,speed:.55,mode:'single',motors:[1,1,1],wheels:[0,0,0],path:[],running:null,startX:0,startY:0};
+  const ROT_K=.75,LINEAR_SCALE=.62,ANGULAR_SCALE=1.9;
+  let last=performance.now(),pathClock=0,activePointers=new Map(),rotationPointer=null,rotationTimer=0;
+
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+  function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d);ctx.setTransform(d,0,0,d,0,0)}
+  function inverse(vx,vy,rot){let w=[-.5*vx-.8660254*vy-ROT_K*rot,-.5*vx+.8660254*vy-ROT_K*rot,vx-ROT_K*rot],m=Math.max(1,...w.map(Math.abs));return w.map((v,i)=>v/m*state.motors[i])}
+  function forward(w){const rot=-(w[0]+w[1]+w[2])/(3*ROT_K),vx=w[2]+ROT_K*rot,vy=(w[1]-w[0])/(2*.8660254);return[vx,vy,rot]}
+  function desiredCommand(now){if(!state.running)return[state.vx,state.vy,state.rot];const t=(now-state.running.started)/1000;if(state.running.type==='rotate'){if(t>=3){finishTest();return[0,0,0]}return[0,0,.16]}
+    const leg=2.4,pause=.22,slot=leg+pause,index=Math.floor(t/slot);if(index>=4){finishTest();return[0,0,0]}if(t-index*slot>=leg)return[0,0,0];return[[0,.48,0],[.48,0,0],[0,-.48,0],[-.48,0,0]][index]}
+  function finishTest(){const residual=Math.hypot(state.x-state.startX,state.y-state.startY);testResult.textContent=`测试结束：距起点 ${residual.toFixed(3)} m，车头 ${((state.heading*180/Math.PI)%360).toFixed(1)}°`;state.running=null;status.textContent='已停车';status.classList.remove('running')}
+  function step(now){const dt=Math.min((now-last)/1000,.04);last=now;const command=desiredCommand(now),w=inverse(...command),actual=forward(w);state.wheels=w;const c=Math.cos(state.heading),s=Math.sin(state.heading),wx=c*actual[0]+s*actual[1],wy=s*actual[0]-c*actual[1];state.x+=wx*LINEAR_SCALE*dt;state.y+=wy*LINEAR_SCALE*dt;state.heading+=actual[2]*ANGULAR_SCALE*dt;pathClock+=dt;if(pathClock>.035){pathClock=0;state.path.push([state.x,state.y]);if(state.path.length>2500)state.path.shift()}draw();renderReadout(actual,command);requestAnimationFrame(step)}
+
+  function worldTransform(){const r=canvas.getBoundingClientRect(),scale=Math.min(r.width,r.height)*.29;return{cx:r.width/2,cy:r.height/2,scale}}
+  function point(x,y,t){return[t.cx+x*t.scale,t.cy+y*t.scale]}
+  function drawGrid(r,t){ctx.strokeStyle='#d3d9d5';ctx.lineWidth=1;const gap=Math.max(34,t.scale*.25);for(let x=t.cx%gap;x<r.width;x+=gap){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,r.height);ctx.stroke()}for(let y=t.cy%gap;y<r.height;y+=gap){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(r.width,y);ctx.stroke()}ctx.strokeStyle='#aeb8b1';ctx.beginPath();ctx.moveTo(t.cx,0);ctx.lineTo(t.cx,r.height);ctx.moveTo(0,t.cy);ctx.lineTo(r.width,t.cy);ctx.stroke()}
+  function draw(){const r=canvas.getBoundingClientRect(),t=worldTransform();ctx.clearRect(0,0,r.width,r.height);drawGrid(r,t);if(state.path.length>1){ctx.strokeStyle='#148653';ctx.lineWidth=2;ctx.beginPath();state.path.forEach(([x,y],i)=>{const p=point(x,y,t);i?ctx.lineTo(...p):ctx.moveTo(...p)});ctx.stroke()}const p=point(state.x,state.y,t);ctx.save();ctx.translate(...p);ctx.rotate(state.heading);ctx.fillStyle='#f9fbf9';ctx.strokeStyle='#18221b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-46);ctx.lineTo(42,25);ctx.quadraticCurveTo(0,47,-42,25);ctx.closePath();ctx.fill();ctx.stroke();[[0,-46,0],[-39,26,-2.1],[39,26,2.1]].forEach(([x,y,a],i)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle=Math.abs(state.wheels[i])>.02?'#168653':'#6d7770';ctx.fillRect(-13,-5,26,10);ctx.restore()});ctx.strokeStyle='#168653';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,9);ctx.lineTo(0,-28);ctx.stroke();ctx.beginPath();ctx.moveTo(-7,-20);ctx.lineTo(0,-30);ctx.lineTo(7,-20);ctx.stroke();ctx.restore()}
+  function renderReadout(actual,command){document.getElementById('vx').textContent=`VX ${command[0].toFixed(2)}`;document.getElementById('vy').textContent=`VY ${command[1].toFixed(2)}`;document.getElementById('rot').textContent=`ROT ${command[2].toFixed(2)}`;poseBox.innerHTML=`X ${state.x.toFixed(2)} m　Y ${(-state.y).toFixed(2)} m<br>车头 ${(state.heading*180/Math.PI).toFixed(1)}°　实际 ROT ${actual[2].toFixed(2)}`;state.wheels.forEach((v,i)=>{const bar=document.getElementById(`w${i+1}`);bar.style.width=`${Math.abs(v)*100}%`;bar.classList.toggle('negative',v<0);document.getElementById(`w${i+1}v`).textContent=v.toFixed(2)});if(!state.running&&(Math.abs(command[0])+Math.abs(command[1])+Math.abs(command[2])>.01)){status.textContent='仿真运行中';status.classList.add('running')}else if(!state.running){status.textContent='已停车';status.classList.remove('running')}}
+  function stop(){clearTimeout(rotationTimer);rotationTimer=0;rotationPointer=null;state.vx=state.vy=state.rot=0;state.running=null;activePointers.clear();document.querySelectorAll('.dragging,.active').forEach(e=>e.classList.remove('dragging','active'));document.querySelectorAll('.knob').forEach(k=>k.style.transform='translate(-50%,-50%)');document.getElementById('pitch').value=0;document.getElementById('roll').value=0;renderTilt()}
+  function resetPose(){stop();state.x=state.y=state.heading=0;state.path=[];state.startX=state.startY=0;testResult.textContent='方形顺序：前进 → 右移 → 后退 → 左移，四段 ROT 都为 0。'}
+
+  function bindPad(el,type){const knob=el.querySelector('.knob');function update(e){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;if(type==='single'){let dx=e.clientX-cx,dy=e.clientY-cy,lim=r.width*.34,d=Math.hypot(dx,dy);if(d>lim){dx*=lim/d;dy*=lim/d}knob.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;const vector=RokiControl.singleVector(dx/lim,-dy/lim,state.speed);state.vx=vector.vx;state.vy=vector.vy;state.rot=0}else if(type==='throttle'){let dy=clamp(e.clientY-cy,-r.height*.32,r.height*.32);knob.style.transform=`translate(-50%,calc(-50% + ${dy}px))`;state.vy=RokiControl.applyDeadzone(-dy/(r.height*.32),.07,1.2)*state.speed;state.vx=0}else{let dx=clamp(e.clientX-cx,-r.width*.32,r.width*.32),raw=dx/(r.width*.32);knob.style.transform=`translate(calc(-50% + ${dx}px),-50%)`;const originalLimit=RokiControl.STEER_LIMIT,selectedLimit=Number(document.getElementById('steer-limit').value)/100;state.rot=RokiControl.steeringCommand(raw,state.speed)*selectedLimit/originalLimit}}
+    el.addEventListener('pointerdown',e=>{e.preventDefault();if(state.running)return;activePointers.set(e.pointerId,type);el.setPointerCapture(e.pointerId);el.classList.add('dragging');update(e)});el.addEventListener('pointermove',e=>{if(activePointers.get(e.pointerId)===type)update(e)});const end=e=>{if(activePointers.get(e.pointerId)!==type)return;activePointers.delete(e.pointerId);el.classList.remove('dragging');knob.style.transform='translate(-50%,-50%)';if(type==='single'){state.vx=state.vy=0}else if(type==='throttle'){state.vy=0}else state.rot=0};el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);el.addEventListener('lostpointercapture',end)}
+  bindPad(document.getElementById('single'),'single');bindPad(document.getElementById('throttle'),'throttle');bindPad(document.getElementById('steering'),'steering');
+  function speedName(){return state.speed<=.35?'slow':state.speed>=.75?'fast':'standard'}
+  document.querySelectorAll('[data-rotate]').forEach(b=>{const end=e=>{if(rotationPointer!==null&&e&&e.pointerId!==rotationPointer)return;clearTimeout(rotationTimer);rotationTimer=0;rotationPointer=null;state.rot=0;b.classList.remove('active')};b.addEventListener('pointerdown',e=>{e.preventDefault();if(state.running||state.mode==='tilt'||rotationPointer!==null)return;activePointers.clear();document.querySelectorAll('.knob').forEach(k=>k.style.transform='translate(-50%,-50%)');state.vx=state.vy=0;rotationPointer=e.pointerId;b.setPointerCapture(e.pointerId);b.classList.add('active');const sign=Number(b.dataset.rotate);state.rot=sign*RokiControl.rotationCommand(speedName(),'kick');rotationTimer=setTimeout(()=>{if(rotationPointer===e.pointerId)state.rot=sign*RokiControl.rotationCommand(speedName(),'hold')},RokiControl.ROTATION_KICK_MS)});b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);b.addEventListener('lostpointercapture',end)});
+  document.getElementById('modes').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;stop();state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',x===b));['single','dual','tilt'].forEach(m=>document.getElementById(`panel-${m}`).hidden=m!==state.mode);document.getElementById('rotation-buttons').hidden=state.mode==='tilt'});
+  document.getElementById('speeds').addEventListener('click',e=>{const b=e.target.closest('[data-speed]');if(!b)return;stop();state.speed=Number(b.dataset.speed);document.querySelectorAll('[data-speed]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+  function renderTilt(){const pitch=Number(document.getElementById('pitch').value),roll=Number(document.getElementById('roll').value);document.querySelector('#pitch+output').textContent=`${pitch}°`;document.querySelector('#roll+output').textContent=`${roll}°`;const map=a=>Math.abs(a)<=3?0:Math.sign(a)*clamp((Math.abs(a)-3)/22,0,1),x=map(roll),y=map(pitch),mag=Math.max(1,Math.hypot(x,y));if(state.mode==='tilt'){state.vx=x/mag*state.speed;state.vy=y/mag*state.speed;state.rot=0}}
+  document.getElementById('pitch').addEventListener('input',renderTilt);document.getElementById('roll').addEventListener('input',renderTilt);
+  ['steer-limit','steer-expo'].forEach(id=>document.getElementById(id).addEventListener('input',e=>e.target.nextElementSibling.textContent=id==='steer-limit'?`${e.target.value}%`:e.target.value));
+  document.querySelectorAll('.motor').forEach(slider=>slider.addEventListener('input',e=>{const i=Number(e.target.dataset.motor);state.motors[i]=Number(e.target.value)/100;e.target.nextElementSibling.textContent=`${e.target.value}%`}));
+  document.getElementById('stop').addEventListener('click',stop);document.getElementById('reset-pose').addEventListener('click',resetPose);document.getElementById('clear-path').addEventListener('click',()=>state.path=[]);
+  function startTest(type){resetPose();state.startX=state.x;state.startY=state.y;state.running={type,started:performance.now()};status.textContent=type==='square'?'方形测试中':'旋转测试中';status.classList.add('running');testResult.textContent=type==='square'?'正在执行四条等时、等速、零旋转边':'正在检查三轮速度差是否造成漂移'}
+  document.getElementById('square').addEventListener('click',()=>startTest('square'));document.getElementById('pure-rotate').addEventListener('click',()=>startTest('rotate'));
+  function calculateCalibration(){const turns=[1,2,3].map(i=>Number(document.getElementById(`turn${i}`).value)),result=RokiControl.calculateGains(turns),box=document.getElementById('cal-result');if(result.reason==='invalid'){box.textContent='请输入三只轮都大于 0 的圈数';return}if(result.reason==='range'){box.textContent='圈数差异超过可调范围，请先检查电机、阻力、驱动电压和接线';return}box.textContent=`建议增益：M1 ${result.values[0].toFixed(2)}　M2 ${result.values[1].toFixed(2)}　W3 ${result.values[2].toFixed(2)}`}
+  [1,2,3].forEach(i=>document.getElementById(`turn${i}`).addEventListener('input',calculateCalibration));
+  window.addEventListener('resize',resize);resize();resetPose();requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>

@@ -85,5 +85,5 @@ const server = http.createServer((request, response) => {
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-  process.stdout.write(`OmniCar RSSI monitor: http://127.0.0.1:${PORT}\n`);
+  process.stdout.write(`RokiCar RSSI monitor: http://127.0.0.1:${PORT}\n`);
 });

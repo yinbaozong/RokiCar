@@ -65,7 +65,7 @@ added=body.cut(orig)
 report={'nail_approach_interference_mm3':nail.intersect(body.fuse(cap)).Volume(),'version':'V7 small independent lifting lip','magnet_diameter_mm':8,'magnet_thickness_mm':2,'quantity':4,'socket_diameter_mm':MD,'socket_depth_mm':DEPTH,'hatch_above_original_roof_mm':TOP-35,'V2_height_above_roof_mm':12.5,'roof_recess_safety_margin_mm':1.0,'cap_body_overlap_mm3':body.intersect(cap).Volume(),'battery_extraction_obstruction_mm3':added.intersect(lift).Volume(),'finger_scoop':{'nominal_width_mm':8,'original_roof_cut_depth_mm':0.7,'clear_height_mm':2.0,'lid_roof_remaining_mm':2.2,'right_locator_xy':[29.6,23.0]},'note':'Two verified blind exterior roof recesses, small locating pins, a tapered exterior guide surround and one small fully open fixed-rim access and an independent hatch lip alter the original shell. Internal geometry and wheel-edge surfaces are unchanged. Basic CAD checks only; no physical magnetic/print tests.'}
 assert report['cap_body_overlap_mm3']<1e-5
 assert report['battery_extraction_obstruction_mm3']<1e-5
-assembly=cq.Assembly(name='RIFT_V7_service_hatch');scene=[]
+assembly=cq.Assembly(name='RokiCar_V7_service_hatch');scene=[]
 for name,s,col in [('01_shell',body,(.10,.68,.29)),('02_hatch',cap,(.10,.68,.29))]:
  assert s.isValid() and len(s.Solids())==1,name
  cq.exporters.export(s,str(O/(name+'.step')))

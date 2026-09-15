@@ -236,8 +236,8 @@ M3 铜柱或打印柱，高 25-35 mm
 第一版不必上蓝牙。用 WiFi AP + UDP 最简单：
 
 ```text
-CyberBrick 建立 WiFi 热点：OmniCar
-手机连接 OmniCar
+CyberBrick 建立 WiFi 热点：RokiCar
+手机连接 RokiCar
 手机 App/网页发送 UDP 到 192.168.4.1:1234
 数据格式：AG<角度>LG<速度>RO<旋转>
 示例：AG90LG40RO50

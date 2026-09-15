@@ -5,7 +5,7 @@
 刷入后 CyberBrick 会创建热点：
 
 ```text
-WiFi: OmniCar-Demo
+WiFi: RokiCar-Demo
 Password: 12345678
 URL: http://192.168.4.1/
 ```

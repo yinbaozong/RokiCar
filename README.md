@@ -1,65 +1,65 @@
-# RIFT / OmniCar — 三轮全向小车
+# RokiCar · 洛奇小车
 
-绿色、紧凑、可打印，一块可更换的顶盖，留给更多自己的想法。
+**三轮全向移动，六边形车身，可打印、可改造的小型机器人。**
 
-公开仓库：[yinbaozong/RIFT-OmniCar](https://github.com/yinbaozong/RIFT-OmniCar)。本项目原创内容采用 [MIT许可](LICENSE)，欢迎修改、再分发与商用；第三方依赖见 [组件说明](THIRD_PARTY.md)。
+RokiCar 是本项目的正式名称。绿色外壳与黑色轮组搭配，低矮磁吸顶盖便于电池检修；未来可通过专用顶盖探索相机、传感器等扩展。
 
-本包于 2026-09-14 整理。车壳采用用户确认的 **V7**，Android 控制端为工作区 **1.21.0** 源码与现有 debug APK。RIFT 是设计阶段暂用名，软件仍叫 OmniCar；尚未统一改名。
+![RokiCar 整车宣传效果图](04_media/01_hero_closed.png)
 
-![整车宣传图](04_media/01_hero_closed.png)
+本资料包：2026-09-16；模型：用户确认的V7；手机端：RokiCar Android 1.22.0。远程仓库当前保持私有。
 
-## 从这里开始
+## 先看这几份
 
-- 看项目全貌：[项目总览](05_docs/PROJECT_OVERVIEW.md)。
-- 看最终外壳：`01_model/cad/03_shell_assembly.step`（车壳＋盖子，不含轮子）。
-- 打印新外壳：`01_model/print/01_shell_print.stl`、`02_hatch_print.stl`；先打印磁铁试配块。
-- 原底壳：`01_model/cad/04_original_base.step`；原完整装配体在 `01_model/reference/original_full_assembly.step`，该参考装配仍是原车壳。
-- 零件汇总：[装配清单](05_docs/BOM.md)。
-- 装车与打印：[制造装配说明](05_docs/PRINT_AND_ASSEMBLY.md)。
-- 安装手机端：`02_software/android_apk/OmniCar-Controller-v1.21-debug.apk`。
-- 主固件：`02_software/firmware/cyberbrick_omni_m1m2_plus_drv8833/`。
-- 当前说明：[软件使用入口](05_docs/SOFTWARE_GUIDE.md)。
-- 发布介绍：[宣传文案](05_docs/PROMO_COPY.md)；配图在 `04_media/`。
-- 顶部扩展：[扩展设计说明](05_docs/EXPANSION.md)。
+1. [快速开始](05_docs/QUICK_START.md)：从下载到首次架空测试。
+2. [项目完整手册](RokiCar_项目手册.md)：集中阅读项目、硬件、打印、软件与后续开发。
+3. [MakerWorld发布文案](05_docs/MAKERWORLD_DESCRIPTION.md)：可复制到作品详情。
+4. [发布文件清单](05_docs/PUBLISH_FILES.md)：模型、图片和资料附件分别在哪里。
 
-## 文件夹
+## 文档导航
 
-| 文件夹 | 内容 |
+| 内容 | 文档 |
 |---|---|
-| 01_model | V7 STEP、FDM STL、参数化生成脚本、CAD预览、剖面、验证报告、原模型参考 |
-| 02_software | Android源码与APK、主固件与历史方案、UniApp备选客户端、模拟器、教程、RSSI工具 |
-| 03_hardware_and_learning | 工作区现有接线图、制作方案、配置指南、规划文档 |
-| 04_media | 整车主图、相机/云台概念海报、图像生成提示词 |
-| 05_docs | 本次整理的统一总览、装配说明、软件入口、扩展说明、宣传文案、资料索引 |
+| 项目定位、结构与版本 | [项目总览](05_docs/PROJECT_OVERVIEW.md) |
+| 零件与待确认规格 | [BOM](05_docs/BOM.md) |
+| 打印方向、磁铁、装配 | [打印与装配](05_docs/PRINT_AND_ASSEMBLY.md) |
+| 模块电路连接与供电 | [硬件接线](05_docs/HARDWARE_CONNECTIONS.md) |
+| APK、源码、固件与校准 | [软件指南](05_docs/SOFTWARE_GUIDE.md) |
+| 已有、实验与计划功能 | [功能状态与路线图](05_docs/FEATURES_AND_ROADMAP.md) |
+| 相机顶盖未来方向 | [扩展设计](05_docs/EXPANSION.md) |
+| 故障排查与反馈 | [故障排查](05_docs/TROUBLESHOOTING.md) |
+| 名称与软件兼容性 | [命名说明](05_docs/NAMING.md) |
 
-## 当前状态
+## 模型与软件
 
-已提供模型和软件资料；本次只做整理，未重新刷机、编译APP或进行整车实测。V7基础CAD干涉、指甲进入通道和STL封闭性检查通过，打印配合及磁力仍需实物验证。AI页面在1.21中为待开发，返航为实验功能；相机、云台、图传、自动导航均不是本包已完成能力。
+- `01_model/cad/03_shell_assembly.step`：V7车壳＋顶盖。
+- `01_model/cad/04_original_base.step`：原底壳。
+- `01_model/print/`：新车壳、顶盖和磁铁试配块STL。
+- `01_model/reference/original_full_assembly.step`：原整车装配参考，仍含旧壳；不是V7完整整车装配。
+- `02_software/android_apk/RokiCar-Controller-v1.22-debug.apk`：重新构建的控制器安装包。
+- `02_software/mobile/rokicar-android/`：当前原生Android源码。
+- `02_software/firmware/cyberbrick_rokicar_m1m2_plus_drv8833/`：当前主固件。
+- `02_software/lessons/`、`simulator/`：运动学教程与模拟器。
 
-宣传图由AI根据CAD参考生成，外形细节以STEP为准。扩展图中的摄像头、云台、螺钉和支架仅为概念，不包含对应制造文件。
+## 硬件连接
 
-原有文档保留了历史版本记录，发生冲突时以本包 `05_docs` 的版本说明及当前源代码为准。旧V1–V6外壳、历史APK、设备备份、缓存与本机SDK路径未混入当前交付。
+![当前主线连接图](03_hardware_and_learning/当前主线连接总图.svg)
 
-## MakerWorld发布入口
+现有资料提供模块级连接图与逐线表，没有自制PCB原理图/Gerber。稳压器型号、部分供电接口和灯模块端子顺序仍待实车补充。旧双DRV8833方案仅作历史参考，不要与当前M1/M2＋单DRV8833主线混接。
 
-- [可用发布文案](05_docs/MAKERWORLD_DESCRIPTION.md)
-- [硬件逐线连接表](05_docs/HARDWARE_CONNECTIONS.md)
-- [现有／实验功能和开发计划](05_docs/FEATURES_AND_ROADMAP.md)
-- [当前主线连接图](03_hardware_and_learning/当前主线连接总图.svg)
-- [实际机械爆炸图](04_media/04_exploded_cad.png)
+## 机械结构
 
-三张新版宣传图已修正底盖画面；参考装配体的底板定位未修改。实际装配以CAD及试装为准。
+![机械爆炸图](04_media/04_exploded_cad.png)
 
-## 硬件接线图
+图中为真实模型的顶盖、车壳、底盖和轮组，未展示电子板、电池和线束。宣传图的底盖已作合拢表现；原参考装配体底板存在向下偏移，实际装配需核对定位。V7零件未因宣传图而修改。
 
-![当前主线模块连接图](03_hardware_and_learning/当前主线连接总图.svg)
+## 目前做到哪里
 
-图为现有源码与资料整理的模块级接线，不是实车测绘的PCB原理图。稳压器型号、板卡供电接口和灯模块端子顺序还需要实物确认。逐线说明见[硬件连接表](05_docs/HARDWARE_CONNECTIONS.md)。
+已有：V7模型、手机操控与校准源码、灯控源码、固件、接线资料。基础模型干涉、指甲进入通道、STL封闭性检查通过；Android 1.22.0 已重新构建并通过软件测试，仍需实车验收。
 
-## 结构爆炸图
+实验：RSSI辅助返航、开环航向估算。待开发：相机磁吸一体顶盖、云台/图传、视觉、定位闭环；AI页在1.22中显示待开发。
 
-![V7机械结构爆炸图](04_media/04_exploded_cad.png)
+已撤下被否定的相机/云台渲染图，当前发布包不含这些概念图。透明背景素材未成功生成，也未作为透明PNG交付。
 
-## 参与开发
+## 使用与贡献
 
-请通过Issues提交打印反馈、接线纠正和功能需求。已有与实验功能见[功能和开发计划](05_docs/FEATURES_AND_ROADMAP.md)。报告硬件问题时请注明固件/App版本、板卡型号、接线和复现步骤。
+原创内容采用[MIT许可](LICENSE)，第三方组件保持各自条款，见[第三方说明](THIRD_PARTY.md)。欢迎反馈打印配合、接线纠正、兼容性和功能建议；请附版本、硬件型号、照片和复现步骤。

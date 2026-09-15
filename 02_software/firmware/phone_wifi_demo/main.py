@@ -15,7 +15,7 @@ except ImportError:
     import json
 
 
-AP_SSID = "OmniCar-Demo"
+AP_SSID = "RokiCar-Demo"
 AP_PASSWORD = "12345678"
 AP_IP = "192.168.4.1"
 LED_PIN = 8
