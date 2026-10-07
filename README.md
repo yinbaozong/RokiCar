@@ -11,7 +11,7 @@
 - [最新 Release / 全部附件](https://github.com/yinbaozong/RokiCar/releases/latest)
 - [复刻指南 PDF](05_docs/RokiCar_复刻指南.pdf)：元器件、图片、装配、AI 刷写和首次校准。
 - [Android APK 直接下载](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-Controller-v1.22-debug.apk)
-- [三文件固件 ZIP](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-Firmware-20261008.zip)
+- [Roki 固件 ZIP](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-Firmware-20261008.zip)
 - [V8 模型 ZIP](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-V8-Models.zip)
 - [快速开始](05_docs/QUICK_START.md) · [物料与采购链接](05_docs/BOM.md) · [打印装配](05_docs/PRINT_AND_ASSEMBLY.md)
 
