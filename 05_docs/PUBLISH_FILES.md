@@ -1,27 +1,14 @@
-# MakerWorld 发布文件清单
+# 发布文件清单
 
-本文件用于准备上传，不代表本次已经发布。GitHub保持私有，作品附件应包含用户需要的资料，不能只放私有仓库链接。
+仓库现为公开；从最新 Release 下载完整资料，或分开取模型、固件、APK 和 PDF。旧 v0.7.0 为历史 V7 发布，不作为当前外壳下载入口。
 
-## 展示图片
+- 制造：01_model/cad（V8 车壳、顶盖与原底壳），01_model/print（STL 和磁铁试配块）。
+- 源模型与检查：01_model/source、reference、docs；原整车参考装配仍含旧车壳。
+- 固件：02_software/firmware/cyberbrick_rokicar_m1m2_plus_drv8833，三份 py 一起上传。
+- 手机软件：02_software/android_apk/RokiCar-Controller-v1.22-debug.apk。
+- 接线：03_hardware_and_learning/RokiCar接线图_D2.png；其他旧接线资料标为历史参考。
+- 图片：04_media/01_hero_real.png、02_camera_real.png、03_interior_real.jpg、04_bottom_real.jpg。
+- 指南：05_docs/RokiCar_复刻指南.pdf；AI 优先、手动备用。
+- MakerWorld 正文：05_docs/MAKERWORLD_DESCRIPTION.md。
 
-1. `04_media/01_hero_closed.png`：整车封面（AI效果图）。
-2. `04_media/04_exploded_cad.png`：真实机械结构爆炸图。
-3. `01_model/images/01_cad_preview.png`：V7原始CAD外观。
-4. `01_model/images/02_grip_section.png`：取盖剖面。
-5. `03_hardware_and_learning/当前主线连接总图.svg`：硬件连接图，若上传界面不接受SVG可在浏览器导出图片。
-
-不使用旧相机/云台图及被否定的一体相机舱图；它们未纳入本包。
-
-## 制造文件
-
-- 车壳与盖：`01_model/print/01_shell_print.stl`、`02_hatch_print.stl`。
-- 磁铁试配：`01_model/print/04_magnet_fit_coupon.stl`。
-- 可编辑外观：`01_model/cad/`内STEP。
-- 底盖：`01_model/cad/04_original_base.step`，保留原结构。
-- 整车参考：`01_model/reference/original_full_assembly.step`仍为原装配，不是V7新壳整车装配。
-
-## 说明与附件
-
-作品正文复制MAKERWORLD_DESCRIPTION.md；完整附件使用本资料包ZIP。根目录README和RokiCar_项目手册.md为总入口。
-
-发布前需由作者核对：实际试打结果、底盖装配定位、稳压/灯模块规格。没有实测的内容保持现有待验证标记，不填假定性能指标。
+旧 V7 爆炸图与取盖剖面归入 history，仅作旧版记录，不代表 V8。已移除旧相机/云台概念宣传图。

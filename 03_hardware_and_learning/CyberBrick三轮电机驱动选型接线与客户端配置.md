@@ -1,3 +1,5 @@
+> 历史学习资料：当前接线、灯口和轮位请以 [最新 D2 接线说明](../05_docs/HARDWARE_CONNECTIONS.md) 与 [接线图](RokiCar接线图_D2.png) 为准。
+
 # CyberBrick 三轮电机驱动选型、接线与客户端配置
 
 日期：2026-07-05

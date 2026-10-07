@@ -1,11 +1,5 @@
-# 当前发布图
+# 图片说明
 
-优先使用01_hero_closed.png、02_camera_closed.png、03_pan_tilt_closed.png，三张均将底盖表现为合拢的窄接缝；这是画面装配修正，没有修改确认过的零件STEP。原装配体中底板向下偏移约5.05毫米，实际装配要在CAD/实物中定位复核，宣传图不作为干涉验证。
+01_hero_real.png：基于实拍补盖并按作者顶盖参考修正；02_camera_real.png：基于实际搭载相机的照片优化。两张为实拍修图，不作为毫米级 CAD 尺寸依据，也不表示图传、云台或专用磁吸相机支架已完成。
 
-04_exploded_cad.png直接由V7网格及原底盖/轮组生成：顶部为可拆盖，中部为车壳，下部为底盖，轮组向外分离。仅展示主要机械结构，未画电路板、电池和线束，并非完整整车逐零件爆炸图。
-
-旧01_hero.png和02_camera_expansion_concepts.png保留供历史对照，不用作新版发布封面。
-
-透明背景请求：image_gen两次返回RGB棋盘格而非透明通道，没有把失败图放入本包。
-
-图像细节以CAD为准；相机/云台含尚未建模的概念安装件。
+03_interior_real.jpg、04_bottom_real.jpg 为原始实拍。相机另购。最新模型预览见 ../01_model/images。history/04_exploded_cad.png 是旧 V7 爆炸图，不作 V8 结构展示。

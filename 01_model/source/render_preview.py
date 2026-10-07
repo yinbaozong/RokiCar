@@ -9,6 +9,7 @@ scene=json.loads((W/'scene.json').read_text(encoding='utf-8'))
 def norm(v):return v/np.linalg.norm(v)
 parts=[]
 for obj in scene['objects']:
+ if '--open' in sys.argv and obj['name']=='02_hatch':continue
  # Internal electronics are hidden by the opaque shell in all these views.
  if obj['name'].startswith('Original component') and int(obj['name'].split()[-1]) not in [0,1,2,3,14]:continue
  path=P/obj['path']
@@ -55,5 +56,5 @@ def render(name,pos,up):
  image=Image.fromarray(frame).resize((1440,1200),Image.Resampling.LANCZOS)
  image.save(OUT/name)
 
-render('01_cad_preview.png',[175,-270,220],[0,0,1])
-print('V5 PREVIEW COMPLETE',flush=True)
+render('02_open_shell.png' if '--open' in sys.argv else '01_cad_preview.png',[175,-270,300],[0,0,1])
+print('V8 PREVIEW COMPLETE',flush=True)

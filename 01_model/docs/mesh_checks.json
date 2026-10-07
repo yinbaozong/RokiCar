@@ -4,8 +4,8 @@
     "watertight": true,
     "winding_consistent": true,
     "bodies": 1,
-    "volume_mm3": 112569.85770212657,
-    "triangles": 23062,
+    "volume_mm3": 112920.08661904807,
+    "triangles": 21956,
     "bounds": [
       [
         -47.63139724731445,
@@ -15,7 +15,7 @@
       [
         47.63139724731445,
         50.66987228393555,
-        37.70000076293945
+        37.400001525878906
       ]
     ]
   },
@@ -24,8 +24,8 @@
     "watertight": true,
     "winding_consistent": true,
     "bodies": 1,
-    "volume_mm3": 6922.971415421237,
-    "triangles": 2618,
+    "volume_mm3": 7044.5769986946425,
+    "triangles": 1092,
     "bounds": [
       [
         -32.0,
@@ -44,7 +44,7 @@
     "watertight": true,
     "winding_consistent": true,
     "bodies": 1,
-    "volume_mm3": 571.1168767321941,
+    "volume_mm3": 569.6710666490299,
     "triangles": 516,
     "bounds": [
       [

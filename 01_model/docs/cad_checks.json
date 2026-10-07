@@ -1,25 +1,107 @@
 {
-  "nail_approach_interference_mm3": 0.0,
-  "version": "V7 small independent lifting lip",
+  "version": "RokiCar V8 — no pins, single magnet pair, reinforced guide rim",
+  "locator_pin_count": 0,
+  "lid_locator_hole_count": 0,
+  "magnet_position_count": 1,
+  "magnet_positions_xy_mm": [
+    [
+      0.0,
+      31.2
+    ]
+  ],
+  "magnet_quantity_total": 2,
   "magnet_diameter_mm": 8,
   "magnet_thickness_mm": 2,
-  "quantity": 4,
-  "socket_diameter_mm": 8.25,
-  "socket_depth_mm": 2.15,
-  "hatch_above_original_roof_mm": 3.5,
-  "V2_height_above_roof_mm": 12.5,
+  "socket_diameter_mm": 8.4,
+  "socket_depth_mm": 2.1,
+  "socket_diameter_clearance_mm": 0.40000000000000036,
+  "socket_depth_allowance_mm": 0.10000000000000009,
+  "lid_guide_clearance_per_side_mm": 0.4,
+  "lid_guide_total_clearance_mm": 0.8,
+  "nominal_lid_roof_gap_mm": 0.20000000000000284,
+  "rim_wall_mm": 1.6,
+  "rim_height_above_roof_mm": 2.3999999999999986,
+  "exterior_support_height_mm": 3.1999999999999993,
+  "minimum_lid_material_above_magnet_mm": 1.199999999999997,
   "roof_recess_safety_margin_mm": 1.0,
+  "support_internal_intrusion_mm3": 0.0,
+  "unexpected_original_material_removed_mm3": 0.0,
   "cap_body_overlap_mm3": 0.0,
   "battery_extraction_obstruction_mm3": 0.0,
-  "finger_scoop": {
-    "nominal_width_mm": 8,
-    "original_roof_cut_depth_mm": 0.7,
-    "clear_height_mm": 2.0,
-    "lid_roof_remaining_mm": 2.2,
-    "right_locator_xy": [
-      29.6,
-      23.0
-    ]
-  },
-  "note": "Two verified blind exterior roof recesses, small locating pins, a tapered exterior guide surround and one small fully open fixed-rim access and an independent hatch lip alter the original shell. Internal geometry and wheel-edge surfaces are unchanged. Basic CAD checks only; no physical magnetic/print tests."
+  "nail_approach_interference_mm3": 0.0,
+  "rim_sample_checks": [
+    {
+      "side_x_mm": -32,
+      "y_mm": 0,
+      "z_mm": 35.3,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": -32,
+      "y_mm": 20,
+      "z_mm": 35.3,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": 32,
+      "y_mm": 0,
+      "z_mm": 35.3,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": 32,
+      "y_mm": 20,
+      "z_mm": 35.3,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": -32,
+      "y_mm": 0,
+      "z_mm": 36.4,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": -32,
+      "y_mm": 20,
+      "z_mm": 36.4,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": 32,
+      "y_mm": 0,
+      "z_mm": 36.4,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": 32,
+      "y_mm": 20,
+      "z_mm": 36.4,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": -32,
+      "y_mm": 0,
+      "z_mm": 37.2,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": -32,
+      "y_mm": 20,
+      "z_mm": 37.2,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": 32,
+      "y_mm": 0,
+      "z_mm": 37.2,
+      "missing_mm3": 0.0
+    },
+    {
+      "side_x_mm": 32,
+      "y_mm": 20,
+      "z_mm": 37.2,
+      "missing_mm3": 0.0
+    }
+  ],
+  "note": "Original internal mounting and wheel structure unchanged. Complete 1.6 mm guide walls and a supported exterior transition replace the clipped thin taper. FDM clearances are design allowances, not a guarantee for every printer or magnet. Physical slicing/fit is for user review."
 }
