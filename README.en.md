@@ -8,7 +8,7 @@ A hexagonal robot car with three omni wheels. It can move forward, backward and 
 
 ## Downloads
 
-- [Build guide PDF (Chinese)](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-Replication-Guide.pdf): parts, purchasing links, wiring, assembly and firmware upload instructions. Start here.
+- [Build guide PDF (English)](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-Replication-Guide-English.pdf): parts, purchasing links, wiring, assembly and firmware upload instructions. Start here.
 - [Android app](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-Controller-v1.22-debug.apk)
 - [Car firmware](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-Firmware-20261008.zip)
 - [3D models](https://github.com/yinbaozong/RokiCar/releases/latest/download/RokiCar-V8-Models.zip)
