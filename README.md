@@ -1,5 +1,7 @@
 # RokiCar
 
+**简体中文** | [English](README.en.md)
+
 一台六边形的三轮全向小车。能前后移动、横着走，也能原地旋转，支持手机控制，外壳可以用普通 FDM 打印机制作。
 
 ![RokiCar](04_media/01_hero_real.png)
